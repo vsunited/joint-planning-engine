@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "jp-engine-dev",
+    "dev": "jp-engine-dev",
+    "prod": "jp-engine-prod"
+  }
+}
