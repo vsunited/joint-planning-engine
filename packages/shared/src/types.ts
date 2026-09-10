@@ -10,8 +10,12 @@ export interface UserProfile {
   email: string;
   displayName: string;
   role: UserRole;
-  unit?: string;
+  // DoD Identity attributes (populated via CAC/ICAM in production)
+  edipi?: string;
+  serviceBranch?: 'Joint' | 'USA' | 'USN' | 'USAF' | 'USMC' | 'USSF' | 'USCG' | 'Civilian' | 'Other';
   rank?: string;
+  unit?: string;
+  organization?: string;
   createdAt: string;
   updatedAt: string;
 }
