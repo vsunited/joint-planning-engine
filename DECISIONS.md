@@ -11,3 +11,7 @@
 ## 3. UI Theme & Target Audience
 - **Decision:** Design for O3-O7 Joint Planners using a "dark tactical" theme with Joint Purple accents.
 - **Rationale:** Matches user expectations for military software while providing a clean, non-fatiguing experience during long planning sessions.
+
+## 4. Protected Environment & Google SSO Whitelist
+- **Decision:** Use Google SSO via Firebase Auth but strictly whitelist access to specific email addresses. Bypass authentication entirely when running in the local development environment (`NODE_ENV === 'development'`).
+- **Rationale:** Prevents unauthorized public access to the live production deployment while allowing rapid, friction-free local development. Allows us to test the `IAuthService` abstraction in a secure way before integrating full CAC PIV federation.
