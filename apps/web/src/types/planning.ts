@@ -431,3 +431,161 @@ export interface CoaDevelopmentState {
   subTaskCompletion: Record<string, boolean>;
   notes: string;
 }
+
+// =============================================================================
+// Step 4: COA Analysis and Wargaming — Type Definitions
+// JP 5-0, Chapter IV, para 4.e — COA Analysis and Wargaming (Step 4)
+// =============================================================================
+
+/** Which enemy COA a friendly COA is wargamed against */
+export type EnemyCoaType = 'mlcoa' | 'mdcoa';
+
+/** Manual wargaming method (JP 5-0, IV-46) */
+export type WargameMethod = 'deliberate_timeline' | 'phasing' | 'critical_events';
+
+/** A critical event — an essential task or series of tasks requiring detailed analysis */
+export interface CriticalEvent {
+  id: string;
+  name: string;
+  description: string;
+  phase: string;
+  timeframe: string;
+  linkedEssentialTask: string;
+  linkedDecisionPointId: string;
+}
+
+/** Wargame cell staffing assignment */
+export interface WargameCellAssignment {
+  cell: 'blue' | 'red' | 'white' | 'green';
+  lead: string;
+  members: string;
+  notes: string;
+}
+
+/**
+ * One wargame turn: action, reaction, counteraction.
+ * JP 5-0, IV-48 — each turn consists of three total moves.
+ */
+export interface WargameTurn {
+  id: string;
+  coaId: string;
+  enemyCoaType: EnemyCoaType;
+  criticalEventId: string;
+  turnNumber: number;
+  action: string;
+  reaction: string;
+  counteraction: string;
+  adjudication: string;
+  insights: string;
+  identifiedGaps: string;
+}
+
+/** A cell in the synchronization matrix: one joint function across one critical event */
+export interface SyncMatrixEntry {
+  id: string;
+  coaId: string;
+  jointFunction: string;
+  criticalEventId: string;
+  content: string;
+}
+
+/** Decision Support Template / Matrix entry (JP 5-0, IV-50) */
+export interface DecisionSupportEntry {
+  id: string;
+  coaId: string;
+  decisionPoint: string;
+  criticalEvent: string;
+  latestTimeToDecide: string;
+  linkedCcir: string;
+  namedAreaOfInterest: string;
+  friendlyAction: string;
+}
+
+/** A branch or sequel identified during wargaming */
+export interface BranchSequel {
+  id: string;
+  coaId: string;
+  type: 'branch' | 'sequel';
+  name: string;
+  trigger: string;
+  description: string;
+}
+
+/** High-value target identified during wargaming */
+export interface HighValueTarget {
+  id: string;
+  coaId: string;
+  target: string;
+  jointFunction: string;
+  whyCritical: string;
+  linkedCog: string;
+}
+
+/** Newly identified resource shortfall */
+export interface ResourceShortfall {
+  id: string;
+  coaId: string;
+  description: string;
+  directorate: string;
+  impact: 'low' | 'medium' | 'high';
+  sourcingAction: string;
+}
+
+/** Per-COA wargame assessment result */
+export interface CoaWargameResult {
+  coaId: string;
+  strengths: string;
+  weaknesses: string;
+  advantages: string;
+  disadvantages: string;
+  assessedRisk: 'low' | 'medium' | 'high' | 'not_assessed';
+  riskRationale: string;
+  feasibilityConfirmed: boolean;
+  recommendation: 'retain' | 'modify' | 'discard' | 'pending';
+}
+
+/** Refined CCIR recommendation coming out of the wargame */
+export interface RefinedCcir {
+  id: string;
+  coaId: string;
+  type: CcirType;
+  question: string;
+  linkedDecisionPoint: string;
+  namedAreaOfInterest: string;
+  isNew: boolean;
+}
+
+/** Wargame setup configuration */
+export interface WargameSetup {
+  format: 'manual' | 'digital';
+  method: WargameMethod;
+  recordMethods: string[];
+  enemyCoasToWargame: EnemyCoaType[];
+  turnsPlanned: number;
+  levelOfDetail: string;
+  facilitator: string;
+  startEvent: string;
+  startLocation: string;
+  startTime: string;
+  commanderWargameGuidance: string;
+  keyDecisionsComplete: Record<string, boolean>;
+}
+
+/** Top-level Step 4 state */
+export interface CoaAnalysisState {
+  setup: WargameSetup;
+  cells: WargameCellAssignment[];
+  criticalEvents: CriticalEvent[];
+  turns: WargameTurn[];
+  syncMatrix: SyncMatrixEntry[];
+  decisionSupport: DecisionSupportEntry[];
+  branchesSequels: BranchSequel[];
+  highValueTargets: HighValueTarget[];
+  shortfalls: ResourceShortfall[];
+  results: CoaWargameResult[];
+  refinedCcirs: RefinedCcir[];
+  purposeCompletion: Record<string, boolean>;
+  outputCompletion: Record<string, boolean>;
+  assessmentPlan: string;
+  notes: string;
+}

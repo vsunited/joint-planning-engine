@@ -8,10 +8,11 @@ import { PhaseWizard } from '@/components/PhaseWizard';
 import { PlanningInitiation, createDefaultPlanningInitState } from '@/components/steps/PlanningInitiation';
 import { MissionAnalysis, createDefaultMissionAnalysisState } from '@/components/steps/MissionAnalysis';
 import { CoaDevelopment, createDefaultCoaDevelopmentState } from '@/components/steps/CoaDevelopment';
+import { CoaAnalysis, createDefaultCoaAnalysisState } from '@/components/steps/CoaAnalysis';
 import { ScenarioSetupModal } from '@/components/ScenarioSetupModal';
 import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
-import { PlanningInitiationState, MissionAnalysisState, CoaDevelopmentState } from '@/types/planning';
+import { PlanningInitiationState, MissionAnalysisState, CoaDevelopmentState, CoaAnalysisState } from '@/types/planning';
 import { 
   Shield, 
   Layers, 
@@ -70,6 +71,11 @@ export default function HomePage() {
   // Step 3: COA Development State
   const [coaDevelopmentState, setCoaDevelopmentState] = useState<CoaDevelopmentState>(
     () => createDefaultCoaDevelopmentState(scenario)
+  );
+
+  // Step 4: COA Analysis & Wargaming State
+  const [coaAnalysisState, setCoaAnalysisState] = useState<CoaAnalysisState>(
+    () => createDefaultCoaAnalysisState(scenario)
   );
 
   const phaseIcons = [
@@ -181,6 +187,14 @@ export default function HomePage() {
                 scenario={scenario}
                 state={coaDevelopmentState}
                 onStateChange={setCoaDevelopmentState}
+                onOpenExportModal={() => setIsExportModalOpen(true)}
+              />
+            ) : selectedPhase === 4 ? (
+              <CoaAnalysis
+                scenario={scenario}
+                state={coaAnalysisState}
+                onStateChange={setCoaAnalysisState}
+                coaDevState={coaDevelopmentState}
                 onOpenExportModal={() => setIsExportModalOpen(true)}
               />
             ) : (

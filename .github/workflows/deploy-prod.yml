@@ -1,0 +1,59 @@
+name: Deploy Production
+
+# Merging to main publishes the live site. Verification is repeated here rather
+# than trusted from the PR run, so a merge commit is always built from scratch.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build & Deploy to jp-engine-prod
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://jp-engine-prod.web.app
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck shared package
+        run: pnpm --filter @jpe/shared exec tsc --noEmit
+
+      - name: Typecheck web app
+        run: pnpm --filter @jpe/web exec tsc --noEmit
+
+      - name: Build static export
+        run: pnpm --filter @jpe/web build
+
+      - name: Verify export output
+        run: |
+          test -f apps/web/out/index.html \
+            || { echo "::error::Static export missing apps/web/out/index.html"; exit 1; }
+
+      # Hosting only. firebase.json also declares a `functions` codebase, but
+      # functions/src is empty, so a blanket `firebase deploy` would fail.
+      - name: Deploy to Firebase Hosting (live)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}
+          projectId: jp-engine-prod
+          channelId: live

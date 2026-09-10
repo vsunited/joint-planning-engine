@@ -1,0 +1,90 @@
+name: CI
+
+# Build and typecheck every pull request, then publish a preview of the site
+# to the dev Firebase project so changes can be reviewed running, not just read.
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # NOTE: deliberately not `turbo run lint`. apps/web's lint script is
+      # `next lint`, and ESLint is not configured in this repo, so it opens an
+      # interactive setup prompt and hangs CI. Typecheck is the real gate.
+      - name: Typecheck shared package
+        run: pnpm --filter @jpe/shared exec tsc --noEmit
+
+      - name: Typecheck web app
+        run: pnpm --filter @jpe/web exec tsc --noEmit
+
+      - name: Build static export
+        run: pnpm --filter @jpe/web build
+
+      - name: Verify export output
+        run: |
+          test -f apps/web/out/index.html \
+            || { echo "::error::Static export missing apps/web/out/index.html"; exit 1; }
+          echo "Export OK: $(du -sh apps/web/out | cut -f1)"
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-out
+          path: apps/web/out
+          retention-days: 7
+
+  preview:
+    name: Deploy Preview (dev)
+    runs-on: ubuntu-latest
+    needs: verify
+    # Preview deploys need repo secrets, which forks cannot read.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build static export
+        run: pnpm --filter @jpe/web build
+
+      - name: Deploy preview channel to jp-engine-dev
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV }}
+          projectId: jp-engine-dev
+          expires: 7d

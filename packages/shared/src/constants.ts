@@ -387,3 +387,251 @@ export const JFC_COA_GUIDANCE_OPTIONS = [
   { key: 'revise', label: 'Direct revisions to a COA, combinations of COAs, or development of an additional COA' },
   { key: 'wargame_priority', label: 'Direct priority for which enemy COA (most dangerous / most likely) to use during wargaming' },
 ] as const;
+
+// =============================================================================
+// Step 4: COA Analysis and Wargaming — Doctrinal Constants
+// JP 5-0, Chapter IV, para 4.e "COA Analysis and Wargaming (Step 4)"
+// (pp. IV-40 to IV-51)
+// =============================================================================
+
+/** Key Inputs to COA Analysis (JP 5-0, Figure IV-12) */
+export const COA_ANALYSIS_KEY_INPUTS = [
+  { id: 'ain-01', label: 'Revised staff estimates' },
+  { id: 'ain-02', label: 'COA alternatives with concept narrative and sketch' },
+  { id: 'ain-03', label: 'Synchronization matrices' },
+  { id: 'ain-04', label: 'Risk assessment' },
+  { id: 'ain-05', label: 'Risk identification' },
+  { id: 'ain-06', label: 'COA evaluation criteria' },
+  { id: 'ain-07', label: 'Network analysis' },
+] as const;
+
+/** Key Outputs of COA Analysis (JP 5-0, Figure IV-12) */
+export const COA_ANALYSIS_KEY_OUTPUTS = [
+  { id: 'aout-01', label: 'Potential decision points' },
+  { id: 'aout-02', label: 'Potential branches and sequels' },
+  { id: 'aout-03', label: 'Refined COAs' },
+  { id: 'aout-04', label: 'Revised staff estimates' },
+  { id: 'aout-05', label: 'Synchronization matrices' },
+  { id: 'aout-06', label: 'Updated network engagement products' },
+  { id: 'aout-07', label: 'Strengths and weaknesses of each COA' },
+  { id: 'aout-08', label: 'Assessed risk for each COA' },
+  { id: 'aout-09', label: "Refined CCIRs and decision points" },
+  { id: 'aout-10', label: 'Common visualization of the operation' },
+  { id: 'aout-11', label: 'Anticipated critical events' },
+  { id: 'aout-12', label: 'Validated objectives and transitions' },
+] as const;
+
+/**
+ * The three key decisions the staff makes BEFORE COA analysis begins.
+ * JP 5-0, IV-46, para (h).
+ */
+export const WARGAME_KEY_DECISIONS = [
+  {
+    id: 'wkd-01',
+    label: 'Decide what type of wargame to use',
+    description: 'Stems from commander\'s guidance, time, resources available, staff expertise, and availability of simulation models.',
+  },
+  {
+    id: 'wkd-02',
+    label: 'Prioritize the enemy COAs or friendly partner capabilities to analyze',
+    description: 'Given time constraints, at minimum the most likely and most dangerous enemy COAs are wargamed and role-played by the red cell.',
+  },
+  {
+    id: 'wkd-03',
+    label: 'Choose the criteria for assessing the COAs',
+    description: 'Criteria are selected before the wargame. Precisely defining criteria reduces subjectivity and ensures consistent evaluation.',
+  },
+] as const;
+
+/** Manual wargaming methods (JP 5-0, IV-46 to IV-47) */
+export const WARGAME_METHODS = [
+  {
+    key: 'deliberate_timeline',
+    label: 'Deliberate Timeline Analysis',
+    description: 'Consider actions day-by-day or in other discrete blocks of time. The most thorough method for detailed analysis when time permits.',
+  },
+  {
+    key: 'phasing',
+    label: 'Phasing',
+    description: 'Used as a framework for COA analysis. Identify significant actions and requirements by functional area or JTF component.',
+  },
+  {
+    key: 'critical_events',
+    label: 'Critical Events / Sequence of Essential Tasks',
+    description: 'Highlights actions necessary to establish conditions for future operations. Enables planners to adapt if the enemy reacts in a way that requires reordering essential tasks, and to analyze essential tasks concurrently.',
+  },
+] as const;
+
+/** Wargame execution format (JP 5-0, IV-46) */
+export const WARGAME_FORMATS = [
+  { key: 'manual', label: 'Manual' },
+  { key: 'digital', label: 'Digital / Computer-Assisted' },
+] as const;
+
+/** Methods to record and display wargaming results (JP 5-0, Figure IV-13) */
+export const WARGAME_RECORD_METHODS = [
+  { key: 'narrative', label: 'Narrative' },
+  { key: 'sketch_note', label: 'Sketch and Note' },
+  { key: 'worksheets', label: 'War Game Worksheets' },
+  { key: 'sync_matrix', label: 'Synchronization Matrix' },
+] as const;
+
+/** Wargame cells (JP 5-0, IV-47 to IV-48) */
+export const WARGAME_CELLS = [
+  {
+    key: 'blue',
+    label: 'Blue Cell',
+    color: 'sky',
+    description: 'Represents friendly forces.',
+    composition: 'Joint force staff and component representatives',
+  },
+  {
+    key: 'red',
+    label: 'Red Cell',
+    color: 'red',
+    description: "Role-plays and models the enemy and others in the OA. Develops critical decision points, projects enemy reactions to friendly actions, and estimates impacts on enemy forces and objectives. By trying to win the wargame, the red cell helps the staff identify weaknesses before a real enemy does.",
+    composition: 'J-2 staff augmented by supporting CCMD J-2 personnel and other SMEs',
+  },
+  {
+    key: 'white',
+    label: 'White Cell',
+    color: 'slate',
+    description: 'A small cell of arbitrators providing overall oversight and any adjudication required between participants, so the wargame does not bog down in disagreement. May include the facilitator or highly qualified experts.',
+    composition: 'Senior individuals familiar with the plan',
+  },
+  {
+    key: 'green',
+    label: 'Green Cell',
+    color: 'emerald',
+    description: 'Represents civilians, transnational groups, NGOs, and others in the OA.',
+    composition: 'J-9 / civil-military and interorganizational representatives',
+  },
+] as const;
+
+/** The three moves that make up each wargame turn (JP 5-0, IV-48) */
+export const WARGAME_MOVE_TYPES = [
+  { key: 'action', label: 'Action', owner: 'Blue Cell', description: 'The friendly force acts.' },
+  { key: 'reaction', label: 'Reaction', owner: 'Red Cell', description: 'The enemy or other relevant actor reacts.' },
+  { key: 'counteraction', label: 'Counteraction', owner: 'Blue Cell', description: 'The friendly force counters the reaction.' },
+] as const;
+
+/** Enemy COA priority for wargaming (JP 5-0, IV-44) */
+export const ENEMY_COA_TYPES = [
+  { key: 'mlcoa', label: 'Enemy Most Likely COA (MLCOA)' },
+  { key: 'mdcoa', label: 'Enemy Most Dangerous COA (MDCOA)' },
+] as const;
+
+/**
+ * Sources for developing COA evaluation criteria (JP 5-0, IV-45, para (g)1).
+ * Criteria change from mission to mission and require clear definition.
+ */
+export const EVAL_CRITERIA_SOURCES = [
+  { id: 'ecs-a', label: "Commander's guidance and commander's intent" },
+  { id: 'ecs-b', label: 'Mission accomplishment at an acceptable cost, including impacts to other global requirements' },
+  { id: 'ecs-c', label: 'The principles of joint operations' },
+  { id: 'ecs-d', label: 'Doctrinal fundamentals for the type of operation conducted' },
+  { id: 'ecs-e', label: 'The level of residual risk to mission and force in the COA' },
+  { id: 'ecs-f', label: 'Implicit significant factors relating to the operation (e.g., need for speed, security)' },
+  { id: 'ecs-g', label: 'Factors relating to specific staff functions' },
+  { id: 'ecs-h', label: 'Elements of operational design' },
+  { id: 'ecs-i', label: 'Other factors: diplomatic or political constraints, residual risks, protection and restoration of the civilian environment, financial costs, flexibility, simplicity, surprise, speed, mass, sustainability, C2, and capability and infrastructure survivability' },
+] as const;
+
+/** Sample Wargaming Steps (JP 5-0, Figure IV-13) */
+export const WARGAMING_STEPS = [
+  {
+    step: 1,
+    label: 'Prepare for the Wargame',
+    actions: [
+      'Gather tools',
+      'List and review friendly forces and capabilities',
+      'List and review opposing forces and capabilities',
+      'List known critical events',
+      'Determine participants',
+      'Determine opposing COA to wargame',
+      'Select wargaming method (manual or computer-assisted)',
+      'Select a method to record and display wargaming results (narrative, sketch and note, war game worksheets, synchronization matrix)',
+    ],
+  },
+  {
+    step: 2,
+    label: 'Conduct Wargame and Assess Results',
+    actions: [
+      'Purpose of wargame (identify gaps, visualization)',
+      'Basic methodology (e.g., action, reaction, counteraction)',
+      'Record results',
+    ],
+  },
+  {
+    step: 3,
+    label: 'Prepare Products',
+    actions: [
+      'Results of the wargame brief (potential decision points, evaluation criteria, potential branches and sequels)',
+      'Revised staff estimates',
+      'Refined COAs',
+      'Time-phased force and deployment data refinement and transportation feasibility',
+      'Feedback through the COA decision brief',
+    ],
+  },
+] as const;
+
+/**
+ * What COA analysis helps the commander and staff do.
+ * JP 5-0, IV-43 to IV-44, para (c)1 through 19.
+ */
+export const COA_ANALYSIS_PURPOSES = [
+  { id: 'cap-01', label: 'Determine how to maximize combat power against the enemy while protecting friendly forces and minimizing collateral damage' },
+  { id: 'cap-02', label: 'Have as near an identical visualization of the operation as possible' },
+  { id: 'cap-03', label: 'Anticipate adversary, enemy, and other relevant actor actions/events and potential reaction options' },
+  { id: 'cap-04', label: 'Determine conditions and resources required for success, while identifying gaps and seams' },
+  { id: 'cap-05', label: "Determine when and where to apply the force's capabilities" },
+  { id: 'cap-06', label: 'Plan for and coordinate authorities to integrate information activities early' },
+  { id: 'cap-07', label: 'Focus intelligence and operation assessment requirements' },
+  { id: 'cap-08', label: 'Determine the most flexible COA' },
+  { id: 'cap-09', label: 'Identify potential decision points' },
+  { id: 'cap-10', label: 'Determine task organization options' },
+  { id: 'cap-11', label: 'Develop data for use in a synchronization matrix or related tool' },
+  { id: 'cap-12', label: 'Identify potential plan branches and sequels' },
+  { id: 'cap-13', label: 'Identify high-value targets' },
+  { id: 'cap-14', label: 'Assess risk to friendly forces, HN partners and infrastructure, and the civilian environment' },
+  { id: 'cap-15', label: 'Determine COA advantages and disadvantages' },
+  { id: 'cap-16', label: 'Recommend CCIRs' },
+  { id: 'cap-17', label: 'Validate objectives' },
+  { id: 'cap-18', label: 'Identify contradictions between friendly COAs and expected enemy objectives' },
+  { id: 'cap-19', label: 'Identify the potential impact to the civilian environment' },
+] as const;
+
+/**
+ * Feasibility questions participants continually evaluate during the wargame.
+ * JP 5-0, IV-49, para (c)3.
+ */
+export const WARGAME_FEASIBILITY_QUESTIONS = [
+  'Is it supportable?',
+  'Can it accomplish the objective?',
+  'Will it achieve the desired results?',
+  'How will adversaries, enemies, and other relevant actors react?',
+  'Are more forces, resources, intelligence collection capabilities, or time needed?',
+  'Are necessary logistics and communications available?',
+  'Is the OA large enough?',
+  'Has the threat successfully impacted key enablers, like logistics or communications, or countered a phase of a friendly COA?',
+] as const;
+
+/** Primary outputs of the COA wargame (JP 5-0, IV-50 to IV-51, para (d)2 a–j) */
+export const WARGAME_PRIMARY_OUTPUTS = [
+  { id: 'wpo-a', label: 'Wargamed COAs with graphic and narrative; branches and sequels identified' },
+  { id: 'wpo-b', label: "Information on commander's evaluation criteria" },
+  { id: 'wpo-c', label: 'Initial task organization' },
+  { id: 'wpo-d', label: 'Critical events and decision points' },
+  { id: 'wpo-e', label: 'Newly identified resource shortfalls' },
+  { id: 'wpo-f', label: 'Refined/new CCIRs and event template/matrix' },
+  { id: 'wpo-g', label: 'Initial DST/DSM' },
+  { id: 'wpo-h', label: 'Refined synchronization matrix' },
+  { id: 'wpo-i', label: 'Refined staff estimates' },
+  { id: 'wpo-j', label: 'Assessment plan and criteria' },
+] as const;
+
+/** Branch vs sequel (JP 5-0, IV-44) */
+export const BRANCH_SEQUEL_TYPES = [
+  { key: 'branch', label: 'Branch', description: 'A contingency option built into the plan for changing the mission, disposition, orientation, or direction of movement.' },
+  { key: 'sequel', label: 'Sequel', description: 'A subsequent operation based on the possible outcomes of the current operation — victory, defeat, or stalemate.' },
+] as const;
