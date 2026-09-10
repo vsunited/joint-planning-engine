@@ -71,11 +71,6 @@ export function LoginScreen({ onLoginSuccess }: { onLoginSuccess: () => void }) 
                 </>
               )}
             </button>
-
-            <div className="flex items-center justify-center gap-2 text-xs text-slate-500 font-mono mt-4">
-              <Lock className="w-3 h-3" />
-              <span>IL4/IL5 Secured Node</span>
-            </div>
           </div>
         </div>
       </div>
