@@ -1,0 +1,310 @@
+'use client';
+
+import React, { useState } from 'react';
+import { 
+  X, 
+  UploadCloud, 
+  FileText, 
+  Check, 
+  Shield, 
+  FolderPlus, 
+  Trash2, 
+  Info
+} from 'lucide-react';
+import { OperationalScenario } from '@/types/scenario';
+
+interface ScenarioSetupModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentScenario: OperationalScenario;
+  onSave: (updated: OperationalScenario) => void;
+}
+
+export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
+  isOpen,
+  onClose,
+  currentScenario,
+  onSave,
+}) => {
+  const [scenario, setScenario] = useState<OperationalScenario>({ ...currentScenario });
+  const [dragOver, setDragOver] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSimulatedFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    const files = Array.from(e.target.files);
+    const newDocs = files.map(file => ({
+      name: file.name,
+      size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+      type: file.type || 'application/pdf',
+      uploadedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    }));
+
+    setScenario(prev => ({
+      ...prev,
+      uploadedDocuments: [...prev.uploadedDocuments, ...newDocs],
+    }));
+  };
+
+  const removeDoc = (index: number) => {
+    setScenario(prev => ({
+      ...prev,
+      uploadedDocuments: prev.uploadedDocuments.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(scenario);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border-t-2 border-t-joint-500">
+        {/* Modal Header */}
+        <div className="p-6 bg-gradient-to-r from-slate-900 via-joint-950/40 to-slate-900 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-joint-900/80 border border-joint-500/50 flex items-center justify-center text-joint-300 shadow-md shadow-joint-950/50">
+              <FolderPlus className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-joint-950 text-joint-300 border border-joint-800">
+                  Joint Task Force Setup
+                </span>
+                <span className="text-slate-500 text-xs font-mono">• JP 5-0 Directive</span>
+              </div>
+              <h2 className="text-lg font-bold text-white mt-0.5">
+                Operational Scenario & Orders Intake
+              </h2>
+            </div>
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Modal Body / Scrollable Form */}
+        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+          {/* Section 1: JTF Identity & Command Echelon */}
+          <div className="space-y-4">
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-joint-300 flex items-center gap-2">
+              <Shield className="w-3.5 h-3.5" /> 1. Joint Task Force Identification
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  Joint Task Force Name / Designation
+                </label>
+                <input
+                  type="text"
+                  value={scenario.jtfName}
+                  onChange={e => setScenario({ ...scenario, jtfName: e.target.value })}
+                  placeholder="e.g., JTF-Horn of Africa, JTF-Bravo, JTF-101"
+                  className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-joint-500 transition"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  Operation Name
+                </label>
+                <input
+                  type="text"
+                  value={scenario.operationName}
+                  onChange={e => setScenario({ ...scenario, operationName: e.target.value })}
+                  placeholder="e.g., Sentinel Resolve, Pacific Sentry, Joint Forge"
+                  className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-joint-500 transition"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  Higher Headquarters (Combatant Command)
+                </label>
+                <input
+                  type="text"
+                  value={scenario.higherHq}
+                  onChange={e => setScenario({ ...scenario, higherHq: e.target.value })}
+                  placeholder="e.g., USINDOPACOM, USEUCOM, USAFRICOM, USCENTCOM"
+                  className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-joint-500 transition"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  Lead Planning Officer Rank & Name
+                </label>
+                <input
+                  type="text"
+                  value={scenario.commandingOfficer}
+                  onChange={e => setScenario({ ...scenario, commandingOfficer: e.target.value })}
+                  placeholder="e.g., MAJ D. Hess, LTC J. Reynolds, COL M. Vance"
+                  className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-joint-500 transition"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  Staff Role / Billet
+                </label>
+                <select
+                  value={scenario.officerRole}
+                  onChange={e => setScenario({ ...scenario, officerRole: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-joint-500 transition"
+                >
+                  <option value="Lead J5 Operational Planner">Lead J5 Operational Planner</option>
+                  <option value="J3 Director of Operations">J3 Director of Operations</option>
+                  <option value="J2 Senior Intelligence Officer">J2 Senior Intelligence Officer</option>
+                  <option value="J4 Logistics Staff Officer">J4 Logistics Staff Officer</option>
+                  <option value="JTF Chief of Staff">JTF Chief of Staff</option>
+                  <option value="Commander, Joint Task Force">Commander, Joint Task Force</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  Security Classification Boundary
+                </label>
+                <select
+                  value={scenario.classification}
+                  onChange={e => setScenario({ ...scenario, classification: e.target.value as any })}
+                  className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-joint-500 transition font-mono"
+                >
+                  <option value="UNCLASSIFIED">UNCLASSIFIED // FOUO</option>
+                  <option value="CUI">CUI // REL TO USA, FVEY</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Upload Higher HQ Directives & Documents */}
+          <div className="space-y-4 pt-4 border-t border-slate-800">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-joint-300 flex items-center gap-2">
+                <UploadCloud className="w-3.5 h-3.5" /> 2. Higher HQ Documents & Orders Intake
+              </h3>
+              <span className="text-[10px] text-slate-400 font-mono">
+                Supports: WARNORD, PLANORD, OPORD, JIPOE, GEF
+              </span>
+            </div>
+
+            {/* Dropzone */}
+            <div
+              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={e => {
+                e.preventDefault();
+                setDragOver(false);
+                if (e.dataTransfer.files?.length) {
+                  const files = Array.from(e.dataTransfer.files);
+                  const newDocs = files.map(file => ({
+                    name: file.name,
+                    size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+                    type: file.type || 'application/pdf',
+                    uploadedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                  }));
+                  setScenario(prev => ({
+                    ...prev,
+                    uploadedDocuments: [...prev.uploadedDocuments, ...newDocs],
+                  }));
+                }
+              }}
+              className={`border-2 border-dashed rounded-xl p-6 text-center transition flex flex-col items-center justify-center cursor-pointer ${
+                dragOver 
+                  ? 'border-joint-500 bg-joint-950/30' 
+                  : 'border-slate-700 hover:border-joint-500/70 bg-slate-950/40'
+              }`}
+            >
+              <input
+                type="file"
+                multiple
+                id="docUpload"
+                className="hidden"
+                onChange={handleSimulatedFileUpload}
+                accept=".pdf,.docx,.txt"
+              />
+              <label htmlFor="docUpload" className="cursor-pointer flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-joint-300 mb-2">
+                  <UploadCloud className="w-6 h-6" />
+                </div>
+                <div className="text-xs font-semibold text-slate-200">
+                  Click to browse or drag & drop Higher HQ Directives
+                </div>
+                <div className="text-[11px] text-slate-400 mt-0.5 font-mono">
+                  CCMD WARNORDs, Annexes, Strat Guidance (PDF, DOCX up to 50MB)
+                </div>
+              </label>
+            </div>
+
+            {/* Document List */}
+            {scenario.uploadedDocuments.length > 0 && (
+              <div className="space-y-2 mt-3">
+                <div className="text-[11px] font-mono text-slate-400 font-bold uppercase">
+                  Ingested Strategic Directives ({scenario.uploadedDocuments.length})
+                </div>
+                {scenario.uploadedDocuments.map((doc, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/80 border border-slate-800"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <FileText className="w-4 h-4 text-joint-400" />
+                      <div>
+                        <div className="font-medium text-slate-200">{doc.name}</div>
+                        <div className="text-[10px] text-slate-500 font-mono">
+                          {doc.size} • Ingested at {doc.uploadedAt}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeDoc(idx)}
+                      className="text-slate-500 hover:text-red-400 p-1 transition"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="bg-joint-950/40 border border-joint-900/60 rounded-lg p-3 text-[11px] text-slate-300 flex items-start gap-2">
+              <Info className="w-4 h-4 text-joint-400 shrink-0 mt-0.5" />
+              <div>
+                <strong>Automated JPP Ingestion:</strong> Ingested directives are parsed by the AI Co-Planner to extract specified, implied, and essential tasks, Commander's Critical Information Requirements (CCIRs), and timeline constraints directly into Phase 1 & 2 worksheets.
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Footer */}
+          <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 rounded-lg bg-joint-600 hover:bg-joint-500 text-white font-bold transition shadow-lg shadow-joint-950 flex items-center gap-2"
+            >
+              <Check className="w-4 h-4" />
+              <span>Apply Scenario & Directives</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
