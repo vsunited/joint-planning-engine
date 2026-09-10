@@ -29,3 +29,13 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Local doctrine files (not tracked in public git)
+docs/doctrine/*
+!docs/doctrine/.gitkeep
+
+
+# Local doctrine files (not tracked in public git)
+docs/doctrine/*
+!docs/doctrine/.gitkeep
+
