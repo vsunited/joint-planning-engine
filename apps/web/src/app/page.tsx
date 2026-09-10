@@ -6,10 +6,11 @@ import { Header } from '@/components/Header';
 import { ClassificationBar } from '@/components/ClassificationBar';
 import { PhaseWizard } from '@/components/PhaseWizard';
 import { PlanningInitiation, createDefaultPlanningInitState } from '@/components/steps/PlanningInitiation';
+import { MissionAnalysis, createDefaultMissionAnalysisState } from '@/components/steps/MissionAnalysis';
 import { ScenarioSetupModal } from '@/components/ScenarioSetupModal';
 import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
-import { PlanningInitiationState } from '@/types/planning';
+import { PlanningInitiationState, MissionAnalysisState } from '@/types/planning';
 import { 
   Shield, 
   Layers, 
@@ -58,6 +59,11 @@ export default function HomePage() {
   // Step 1: Planning Initiation State
   const [planningInitState, setPlanningInitState] = useState<PlanningInitiationState>(
     () => createDefaultPlanningInitState(scenario)
+  );
+
+  // Step 2: Mission Analysis State
+  const [missionAnalysisState, setMissionAnalysisState] = useState<MissionAnalysisState>(
+    () => createDefaultMissionAnalysisState(scenario)
   );
 
   const phaseIcons = [
@@ -155,6 +161,13 @@ export default function HomePage() {
                 scenario={scenario}
                 state={planningInitState}
                 onStateChange={setPlanningInitState}
+                onOpenExportModal={() => setIsExportModalOpen(true)}
+              />
+            ) : selectedPhase === 2 ? (
+              <MissionAnalysis
+                scenario={scenario}
+                state={missionAnalysisState}
+                onStateChange={setMissionAnalysisState}
                 onOpenExportModal={() => setIsExportModalOpen(true)}
               />
             ) : (

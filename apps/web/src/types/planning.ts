@@ -92,3 +92,150 @@ export interface PlanningInitiationState {
   existingPlansReviewed: string[];
   notes: string;
 }
+
+// =============================================================================
+// Step 2: Mission Analysis — Type Definitions
+// JP 5-0, Chapter IV — 16 Sub-Tasks
+// =============================================================================
+
+/** Task classification per JP 5-0 */
+export type TaskClassification = 'specified' | 'implied' | 'essential';
+
+/** A single task identified during mission analysis */
+export interface MissionTask {
+  id: string;
+  description: string;
+  classification: TaskClassification;
+  source: string;
+  assignedTo: string;
+  isEssential: boolean;
+  notes: string;
+}
+
+/** A fact — verifiable evidence */
+export interface FactItem {
+  id: string;
+  description: string;
+  source: string;
+  category: 'friendly' | 'enemy' | 'terrain' | 'civil' | 'other';
+}
+
+/** An assumption — must be logical, realistic, essential */
+export interface AssumptionItem {
+  id: string;
+  description: string;
+  isLogical: boolean;
+  isRealistic: boolean;
+  isEssential: boolean;
+  linkedCcir: string;
+  validatedAsFact: boolean;
+}
+
+/** CCIR types */
+export type CcirType = 'PIR' | 'FFIR';
+
+/** Commander's Critical Information Requirement */
+export interface CcirItem {
+  id: string;
+  type: CcirType;
+  priority: number;
+  question: string;
+  indicator: string;
+  collectionAsset: string;
+  ltiov: string;
+  status: 'active' | 'answered' | 'superseded';
+}
+
+/** Essential Element of Friendly Information */
+export interface EefiItem {
+  id: string;
+  description: string;
+  protectionMeasure: string;
+  status: 'active' | 'mitigated';
+}
+
+/** Restated Mission — WHO/WHAT/WHEN/WHERE/WHY */
+export interface RestatedMission {
+  who: string;
+  what: string;
+  when: string;
+  where: string;
+  why: string;
+  fullStatement: string;
+}
+
+/** Operational objective */
+export interface OperationalObjective {
+  id: string;
+  description: string;
+  desiredEffect: string;
+  undesiredEffect: string;
+  linkedTask: string;
+}
+
+/** Risk assessment entry */
+export interface RiskEntry {
+  id: string;
+  type: 'mission' | 'force';
+  hazard: string;
+  probability: 'low' | 'medium' | 'high';
+  consequence: 'low' | 'medium' | 'high';
+  mitigation: string;
+  residualRisk: 'low' | 'medium' | 'high';
+}
+
+/** COA evaluation criterion — established during mission analysis to prevent bias */
+export interface CoaEvalCriterion {
+  id: string;
+  name: string;
+  description: string;
+  weight: number;
+}
+
+/** Running staff estimate per directorate */
+export interface StaffEstimateEntry {
+  directorate: string;
+  status: 'not_started' | 'in_progress' | 'complete';
+  keyFindings: string;
+  shortfalls: string;
+  recommendation: string;
+}
+
+/** JIPOE progress tracker */
+export interface JipoeProgress {
+  step1_defineOE: 'not_started' | 'in_progress' | 'complete';
+  step2_describeImpact: 'not_started' | 'in_progress' | 'complete';
+  step3_evaluateThreat: 'not_started' | 'in_progress' | 'complete';
+  step4_determineThreatCOAs: 'not_started' | 'in_progress' | 'complete';
+  enemyCOG: string;
+  friendlyCOG: string;
+  mlcoa: string;
+  mdcoa: string;
+}
+
+/** Mission Analysis Briefing checklist item */
+export interface BriefingSection {
+  id: string;
+  section: string;
+  prepared: boolean;
+  presenter: string;
+}
+
+/** Top-level Step 2 state */
+export interface MissionAnalysisState {
+  tasks: MissionTask[];
+  facts: FactItem[];
+  assumptions: AssumptionItem[];
+  ccirs: CcirItem[];
+  eefis: EefiItem[];
+  restatedMission: RestatedMission;
+  objectives: OperationalObjective[];
+  risks: RiskEntry[];
+  coaEvalCriteria: CoaEvalCriterion[];
+  staffEstimates: StaffEstimateEntry[];
+  jipoe: JipoeProgress;
+  briefingSections: BriefingSection[];
+  commanderIntent: string;
+  commanderGuidanceUpdate: string;
+  subTaskCompletion: Record<string, boolean>;
+}
