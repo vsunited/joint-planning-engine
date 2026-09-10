@@ -38,6 +38,13 @@ export default function HomePage() {
 
   // Initialize auth listener
   React.useEffect(() => {
+    // Bypass authentication entirely for local development
+    if (process.env.NODE_ENV === 'development') {
+      setIsAuthenticated(true);
+      setIsAuthLoading(false);
+      return;
+    }
+
     const unsubscribe = authService.onAuthStateChanged((user) => {
       if (user && user.email === 'neoderek2005@gmail.com') {
         setIsAuthenticated(true);
