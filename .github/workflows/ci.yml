@@ -27,7 +27,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --dangerously-allow-all-builds
 
       # NOTE: deliberately not `turbo run lint`. apps/web's lint script is
       # `next lint`, and ESLint is not configured in this repo, so it opens an
@@ -76,7 +76,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --dangerously-allow-all-builds
 
       - name: Build static export
         run: pnpm --filter @jpe/web build
