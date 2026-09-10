@@ -9,6 +9,8 @@ import { auth, db } from './firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { IAuthService, AuthSession, UserProfile, UserRole } from '@jpe/shared';
 
+const AUTHORIZED_EMAILS = ['neoderek2005@gmail.com'];
+
 class AuthService implements IAuthService {
   private currentSession: AuthSession | null = null;
 
@@ -20,6 +22,13 @@ class AuthService implements IAuthService {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     const fbUser = result.user;
+    
+    // Strict Whitelist Check
+    if (!fbUser.email || !AUTHORIZED_EMAILS.includes(fbUser.email)) {
+      await fbSignOut(auth);
+      throw new Error("Unauthorized account. Only approved command staff can access the Joint Planning Engine.");
+    }
+
     return await this.syncUserProfile(fbUser);
   }
 
@@ -62,7 +71,7 @@ class AuthService implements IAuthService {
       uid: fbUser.uid,
       email: fbUser.email || '',
       displayName: fbUser.displayName || 'Planning Officer',
-      role: 'planner',
+      role: 'commander',
       serviceBranch: 'Joint',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -70,6 +79,11 @@ class AuthService implements IAuthService {
 
     await setDoc(userRef, newProfile);
     return newProfile;
+  }
+
+  // Helper to observe auth state globally
+  onAuthStateChanged(callback: (user: FirebaseUser | null) => void) {
+    return fbOnAuthStateChanged(auth, callback);
   }
 }
 

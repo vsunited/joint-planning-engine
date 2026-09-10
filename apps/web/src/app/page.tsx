@@ -13,6 +13,8 @@ import { ScenarioSetupModal } from '@/components/ScenarioSetupModal';
 import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
 import { PlanningInitiationState, MissionAnalysisState, CoaDevelopmentState, CoaAnalysisState } from '@/types/planning';
+import { LoginScreen } from '@/components/LoginScreen';
+import { authService } from '@/lib/authService';
 import { 
   Shield, 
   Layers, 
@@ -27,9 +29,25 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+  
   const [selectedPhase, setSelectedPhase] = useState<number>(1);
   const [isScenarioModalOpen, setIsScenarioModalOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+
+  // Initialize auth listener
+  React.useEffect(() => {
+    const unsubscribe = authService.onAuthStateChanged((user) => {
+      if (user && user.email === 'neoderek2005@gmail.com') {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+      setIsAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Operational Scenario State (Default initial scenario for demonstration)
   const [scenario, setScenario] = useState<OperationalScenario>({
@@ -87,6 +105,18 @@ export default function HomePage() {
     Award,        // Phase 6: COA Approval
     FileText,     // Phase 7: Order Production
   ];
+
+  if (isAuthLoading) {
+    return (
+      <div className="flex-1 flex min-h-screen bg-[#090d13] items-center justify-center">
+        <div className="w-8 h-8 border-2 border-joint-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-[#090d13]">
