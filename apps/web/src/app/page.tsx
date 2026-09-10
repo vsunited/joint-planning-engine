@@ -7,10 +7,11 @@ import { ClassificationBar } from '@/components/ClassificationBar';
 import { PhaseWizard } from '@/components/PhaseWizard';
 import { PlanningInitiation, createDefaultPlanningInitState } from '@/components/steps/PlanningInitiation';
 import { MissionAnalysis, createDefaultMissionAnalysisState } from '@/components/steps/MissionAnalysis';
+import { CoaDevelopment, createDefaultCoaDevelopmentState } from '@/components/steps/CoaDevelopment';
 import { ScenarioSetupModal } from '@/components/ScenarioSetupModal';
 import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
-import { PlanningInitiationState, MissionAnalysisState } from '@/types/planning';
+import { PlanningInitiationState, MissionAnalysisState, CoaDevelopmentState } from '@/types/planning';
 import { 
   Shield, 
   Layers, 
@@ -64,6 +65,11 @@ export default function HomePage() {
   // Step 2: Mission Analysis State
   const [missionAnalysisState, setMissionAnalysisState] = useState<MissionAnalysisState>(
     () => createDefaultMissionAnalysisState(scenario)
+  );
+
+  // Step 3: COA Development State
+  const [coaDevelopmentState, setCoaDevelopmentState] = useState<CoaDevelopmentState>(
+    () => createDefaultCoaDevelopmentState(scenario)
   );
 
   const phaseIcons = [
@@ -168,6 +174,13 @@ export default function HomePage() {
                 scenario={scenario}
                 state={missionAnalysisState}
                 onStateChange={setMissionAnalysisState}
+                onOpenExportModal={() => setIsExportModalOpen(true)}
+              />
+            ) : selectedPhase === 3 ? (
+              <CoaDevelopment
+                scenario={scenario}
+                state={coaDevelopmentState}
+                onStateChange={setCoaDevelopmentState}
                 onOpenExportModal={() => setIsExportModalOpen(true)}
               />
             ) : (

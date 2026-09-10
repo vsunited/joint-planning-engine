@@ -239,3 +239,195 @@ export interface MissionAnalysisState {
   commanderGuidanceUpdate: string;
   subTaskCompletion: Record<string, boolean>;
 }
+
+// =============================================================================
+// Step 3: Course of Action (COA) Development — Type Definitions
+// JP 5-0, Chapter IV, para 4.d — COA Development (Step 3)
+// =============================================================================
+
+/** The five doctrinal COA validity criteria */
+export type CoaValidityKey =
+  | 'suitable'
+  | 'feasible'
+  | 'acceptable'
+  | 'distinguishable'
+  | 'complete';
+
+/** Validity test result for one criterion on one COA */
+export interface CoaValidityCheck {
+  status: 'untested' | 'pass' | 'fail';
+  rationale: string;
+}
+
+/** COA statement — the nine questions each COA must answer (JP 5-0, IV-37) */
+export interface CoaStatement {
+  who: string;
+  what: string;
+  where: string;
+  when: string;
+  decisionPoints: string;
+  how: string;
+  why: string;
+  assessment: string;
+  intelConcept: string;
+}
+
+/** Initial CONOPS — the 13 elements associated with each COA (JP 5-0, IV-30) */
+export interface CoaConops {
+  operationalArea: string;
+  objectives: string;
+  essentialTasks: string;
+  forcesCapabilities: string;
+  integratedTimeline: string;
+  taskOrganization: string;
+  operationalConcept: string;
+  sustainmentConcept: string;
+  commSync: string;
+  risk: string;
+  requiredDecisions: string;
+  deploymentConcept: string;
+  mainSupportingEfforts: string;
+}
+
+/** How a COA distinguishes itself from the others (JP 5-0, IV-38) */
+export interface CoaDistinguishability {
+  mainEffort: string;
+  scheme: string;
+  sequencing: 'simultaneous' | 'sequential' | 'combination';
+  mechanism: string;
+  taskOrg: string;
+  reserves: string;
+}
+
+/** Effort assignment within a phase */
+export interface CoaEffort {
+  id: string;
+  phase: string;
+  type: 'main' | 'supporting';
+  component: string;
+  purpose: string;
+  supportedBy: string;
+}
+
+/** Component-level mission/task framed by joint function (JP 5-0, IV-33) */
+export interface ComponentTask {
+  id: string;
+  component: string;
+  jointFunction: string;
+  task: string;
+  location: string;
+  purpose: string;
+  lineOfEffort: string;
+}
+
+/** Decision point tied to a CCIR (JP 5-0, IV-33) */
+export interface CoaDecisionPoint {
+  id: string;
+  name: string;
+  description: string;
+  linkedCcirId: string;
+  latestDecisionDtg: string;
+  decisionAuthority: 'JFC' | 'CCDR' | 'SecDef' | 'President' | 'Other';
+  triggerCriteria: string;
+}
+
+/** Task organization entry with command relationship */
+export interface TaskOrgEntry {
+  id: string;
+  component: string;
+  forcesAssigned: string;
+  commandRelationship: 'COCOM' | 'OPCON' | 'TACON' | 'ADCON' | 'Supported' | 'Supporting' | 'Direct Support';
+  phase: string;
+}
+
+/** COA-specific risk entry */
+export interface CoaRisk {
+  id: string;
+  type: 'mission' | 'force';
+  description: string;
+  probability: 'low' | 'medium' | 'high';
+  consequence: 'low' | 'medium' | 'high';
+  mitigation: string;
+}
+
+/** A single course of action */
+export interface CourseOfAction {
+  id: string;
+  designator: string;
+  name: string;
+  narrative: string;
+  sketchNotes: string;
+  statement: CoaStatement;
+  conops: CoaConops;
+  distinguishability: CoaDistinguishability;
+  efforts: CoaEffort[];
+  componentTasks: ComponentTask[];
+  decisionPoints: CoaDecisionPoint[];
+  taskOrg: TaskOrgEntry[];
+  risks: CoaRisk[];
+  validity: Record<CoaValidityKey, CoaValidityCheck>;
+  jfcDisposition: 'pending' | 'approved_for_analysis' | 'revise' | 'rejected';
+  wargamePriority: number;
+}
+
+/** Operation milestones fixed during COA development (JP 5-0, IV-33) */
+export interface OperationMilestones {
+  cDay: string;
+  dDay: string;
+  hHour: string;
+  lHour: string;
+  mDay: string;
+  nDay: string;
+}
+
+/** Refined COG analysis carried forward from mission analysis (JP 5-0, IV-33) */
+export interface CogRefinement {
+  enemyCog: string;
+  enemyCriticalCapabilities: string;
+  enemyCriticalRequirements: string;
+  enemyCriticalVulnerabilities: string;
+  friendlyCog: string;
+  friendlyCriticalVulnerabilities: string;
+  protectionPriorities: string;
+  decisivePoints: string;
+}
+
+/** Per-COA staff supportability estimate (JP 5-0, IV-39, sub-task (t)) */
+export interface CoaSupportabilityEntry {
+  directorate: string;
+  coaId: string;
+  supportable: 'yes' | 'no' | 'with_mitigation' | 'not_assessed';
+  shortfalls: string;
+}
+
+/** COA Development Briefing checklist item (JP 5-0, Figure IV-11) */
+export interface CoaBriefSection {
+  id: string;
+  owner: string;
+  section: string;
+  prepared: boolean;
+  presenter: string;
+}
+
+/** Commander's guidance issued at the close of Step 3 (JP 5-0, IV-39) */
+export interface JfcCoaGuidance {
+  approvedCoaIds: string[];
+  revisionDirection: string;
+  wargamePriorityEnemyCoa: 'mlcoa' | 'mdcoa' | 'both';
+  additionalGuidance: string;
+  briefDtg: string;
+}
+
+/** Top-level Step 3 state */
+export interface CoaDevelopmentState {
+  technique: 'simultaneous' | 'sequential';
+  operationalArea: string;
+  milestones: OperationMilestones;
+  cog: CogRefinement;
+  coas: CourseOfAction[];
+  supportability: CoaSupportabilityEntry[];
+  briefSections: CoaBriefSection[];
+  jfcGuidance: JfcCoaGuidance;
+  subTaskCompletion: Record<string, boolean>;
+  notes: string;
+}

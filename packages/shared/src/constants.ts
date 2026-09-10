@@ -143,3 +143,247 @@ export const FACT_CATEGORIES = [
   { key: 'civil', label: 'Civil Environment', color: 'amber' },
   { key: 'other', label: 'Other', color: 'slate' },
 ] as const;
+
+// =============================================================================
+// Step 3: Course of Action (COA) Development — Doctrinal Constants
+// JP 5-0, Chapter IV, para 4.d "COA Development (Step 3)" (pp. IV-27 to IV-40)
+// =============================================================================
+
+/** Key Inputs to COA Development (JP 5-0, Figure IV-9) */
+export const COA_DEV_KEY_INPUTS = [
+  { id: 'in-01', label: 'Staff estimates', source: 'All Directorates' },
+  { id: 'in-02', label: 'Mission statement', source: 'J-5 (Step 2)' },
+  { id: 'in-03', label: "Commander's refined operational approach (JFC intent statement)", source: 'CDR / J-5' },
+  { id: 'in-04', label: "JFC's updated planning guidance", source: 'CDR' },
+  { id: 'in-05', label: "Commander's critical information requirements (CCIRs)", source: 'J-2 / J-3' },
+  { id: 'in-06', label: 'Assumptions', source: 'All Staff' },
+  { id: 'in-07', label: 'Network analysis', source: 'J-2' },
+  { id: 'in-08', label: 'Enemy most likely COA (MLCOA)', source: 'J-2 / JIPOE' },
+  { id: 'in-09', label: 'Enemy most dangerous COA (MDCOA)', source: 'J-2 / JIPOE' },
+] as const;
+
+/** Key Outputs of COA Development (JP 5-0, Figure IV-9) */
+export const COA_DEV_KEY_OUTPUTS = [
+  { id: 'out-01', label: 'Revised staff estimates' },
+  { id: 'out-02', label: 'COA alternatives with concept narrative and sketch' },
+  { id: 'out-03', label: 'Synchronization matrices' },
+  { id: 'out-04', label: 'Risk assessment' },
+  { id: 'out-05', label: 'Risk identification' },
+  { id: 'out-06', label: 'COA evaluation criteria' },
+  { id: 'out-07', label: 'Updated network engagement products' },
+] as const;
+
+/**
+ * The five COA validity criteria. Per JP 5-0, the staff should REJECT any COA
+ * alternative that does not meet ALL five.
+ */
+export const COA_VALIDITY_CRITERIA = [
+  {
+    key: 'suitable',
+    label: 'Suitable',
+    definition: "Can accomplish the mission within the commander's guidance.",
+    tests: [
+      'Does it accomplish the mission?',
+      "Does it meet the commander's intent?",
+      'Does it accomplish all the essential tasks?',
+      'Does it meet the conditions for the objective?',
+      'Does it take into consideration the enemy and friendly COGs?',
+      'Where appropriate, are security objectives influenced by demographics of the local population?',
+    ],
+  },
+  {
+    key: 'feasible',
+    label: 'Feasible',
+    definition: 'Can accomplish the mission within the established time, space, and resource limitations.',
+    tests: [
+      'Does the commander have the force structure, posture, transportation, and logistics (means) to execute it?',
+      'Is it executable with the forces, support, and technology available within the constraints of the OE?',
+      'Is it executable against expected enemy opposition?',
+      'If resources are obviously insufficient, can shortfalls be filled by requesting support?',
+    ],
+  },
+  {
+    key: 'acceptable',
+    label: 'Acceptable',
+    definition: 'Balances cost and risk with the advantage gained.',
+    tests: [
+      'Does it contain unacceptable risks? Is it worth the possible cost?',
+      'Do the estimated results justify the risks (losses in forces, time, position, and opportunity)?',
+      'Does it consider constraints ("must do") and restraints ("cannot do")?',
+      'Is it reconciled with US and international law, USG policy, ROE, and acceptable risk?',
+    ],
+  },
+  {
+    key: 'distinguishable',
+    label: 'Distinguishable',
+    definition: 'Sufficiently different from the other COAs under consideration.',
+    tests: [
+      'Is the focus or direction of main effort different?',
+      'Is the scheme of maneuver different across the physical domains, information environment, and EMS?',
+      'Is it sequential versus simultaneous where others are not?',
+      'Is the primary mechanism for mission accomplishment different?',
+      'Is the task organization different?',
+      'Is the use of reserves different?',
+    ],
+  },
+  {
+    key: 'complete',
+    label: 'Complete',
+    definition: 'Answers who, what, where, when, how, and why.',
+    tests: [
+      'Does it incorporate objectives, desired effects to create, and tasks to perform?',
+      'Does it identify major forces and capabilities required, including international partners?',
+      'Does it include concepts for deployment, employment, and sustainment?',
+      'Does it provide time estimates for achieving objectives?',
+      'Does it define mission success criteria and how the commander will know success was achieved?',
+    ],
+  },
+] as const;
+
+/** The six factors that make COAs distinguishable (JP 5-0, IV-38) */
+export const COA_DISTINGUISHABILITY_FACTORS = [
+  { key: 'main_effort', label: 'Focus / direction of main effort' },
+  { key: 'scheme', label: 'Scheme of maneuver (domains, information environment, EMS)' },
+  { key: 'sequencing', label: 'Sequential versus simultaneous maneuvers' },
+  { key: 'mechanism', label: 'Primary mechanism for mission accomplishment' },
+  { key: 'task_org', label: 'Task organization' },
+  { key: 'reserves', label: 'Use of reserves' },
+] as const;
+
+/** The nine questions each COA sketch and statement must answer (JP 5-0, IV-37) */
+export const COA_STATEMENT_QUESTIONS = [
+  { id: 'q-01', key: 'who', question: 'Who (type of forces) will execute the tasks?' },
+  { id: 'q-02', key: 'what', question: 'What are the tasks?' },
+  { id: 'q-03', key: 'where', question: 'Where will the tasks occur? (graphic control measures)' },
+  { id: 'q-04', key: 'when', question: 'When will the tasks begin?' },
+  { id: 'q-05', key: 'decisionPoints', question: 'What are key/critical decision points?' },
+  { id: 'q-06', key: 'how', question: 'How should the commander provide operational direction so components can accomplish tactical actions?' },
+  { id: 'q-07', key: 'why', question: 'Why (for what purpose) will each force conduct its part of the operation?' },
+  { id: 'q-08', key: 'assessment', question: 'How will the commander assess mission accomplishment?' },
+  { id: 'q-09', key: 'intelConcept', question: 'What is the initial intelligence support concept?' },
+] as const;
+
+/** The 13 elements of the initial CONOPS associated with each COA (JP 5-0, IV-30) */
+export const CONOPS_ELEMENTS = [
+  { id: 'con-01', key: 'operationalArea', label: 'Operational Area (OA)' },
+  { id: 'con-02', key: 'objectives', label: 'Objectives' },
+  { id: 'con-03', key: 'essentialTasks', label: 'Essential tasks and purpose' },
+  { id: 'con-04', key: 'forcesCapabilities', label: 'Forces and capabilities required (incl. commercial, interagency)' },
+  { id: 'con-05', key: 'integratedTimeline', label: 'Integrated timeline' },
+  { id: 'con-06', key: 'taskOrganization', label: 'Task organization' },
+  { id: 'con-07', key: 'operationalConcept', label: 'Operational concept' },
+  { id: 'con-08', key: 'sustainmentConcept', label: 'Sustainment concept' },
+  { id: 'con-09', key: 'commSync', label: 'Communication synchronization' },
+  { id: 'con-10', key: 'risk', label: 'Risk' },
+  { id: 'con-11', key: 'requiredDecisions', label: 'Required decisions and decision timeline (e.g., mobilization, DEPORD)' },
+  { id: 'con-12', key: 'deploymentConcept', label: 'Deployment concept' },
+  { id: 'con-13', key: 'mainSupportingEfforts', label: 'Main and supporting efforts' },
+] as const;
+
+/** Step-by-Step (backward/reverse planning) Approach to COA Development (Figure IV-10) */
+export const COA_STEP_BY_STEP_APPROACH = [
+  { step: 1, action: 'Within the limits of available forces, determine how much force will be needed in theater at the end of the operation or campaign, what those forces will be doing, and how they will be postured geographically. Use troop-to-task analysis. Sketch the forces and their locations.' },
+  { step: 2, action: 'Looking at the sketch and working backwards, determine the best way to get the forces postured in Step 1 from their ultimate positions at the end of the operation back to a base in friendly territory. This helps formulate the desired basing plan.' },
+  { step: 3, action: 'Using the mission statement as a guide, determine the tasks the force must accomplish in the physical domains, information environment (including cyberspace), and EMS to achieve the desired objective. Sketch the maneuver plan and confirm all SecDef-directed specified tasks are covered.' },
+  { step: 4, action: 'Determine the basing required to posture the force in friendly territory, and the tasks the force must accomplish to get to those bases. Sketch this as part of the deployment plan.' },
+  { step: 5, action: 'Determine if the planned force is enough for the JFC to accomplish the outcomes of the strategic guidance.' },
+  { step: 6, action: 'Given the required tasks, determine the order the forces should deploy into theater — including forces necessary for mobilization, deployment, force protection, and JRSOI.' },
+  { step: 7, action: 'The information developed should now allow determination of force employment, major tasks and their sequencing, sustainment, and command relationships.' },
+] as const;
+
+/** COA development technique: simultaneous vs sequential (JP 5-0, IV-31) */
+export const COA_DEV_TECHNIQUES = [
+  {
+    key: 'simultaneous',
+    label: 'Simultaneous Development',
+    advantage: 'Potential time savings — separate groups work different COAs in parallel.',
+    disadvantage: 'Disrupts constructive JPG collaboration by breaking up the team; manpower-intensive; requires component and directorate representation in each group; increased likelihood COAs lack distinctiveness.',
+  },
+  {
+    key: 'sequential',
+    label: 'Sequential Development',
+    advantage: 'Preserves the whole planning team on each COA, protecting collaboration and distinctiveness.',
+    disadvantage: 'Consumes more of the available planning time; fewer COAs produced in the same window.',
+  },
+] as const;
+
+/** Action sequencing options for arranging COA actions (JP 5-0, IV-33) */
+export const COA_SEQUENCING_OPTIONS = [
+  { key: 'simultaneous', label: 'Simultaneous' },
+  { key: 'sequential', label: 'Sequential' },
+  { key: 'combination', label: 'Combination' },
+] as const;
+
+/** Operation milestones (JP 5-0, IV-33 sidebar) */
+export const OPERATION_MILESTONES = [
+  { key: 'cDay', label: 'C-Day', definition: 'The day deployment begins.' },
+  { key: 'dDay', label: 'D-Day', definition: 'The day operations began or are scheduled to begin.' },
+  { key: 'hHour', label: 'H-Hour', definition: 'The time (on D-Day) the operation is scheduled to begin.' },
+  { key: 'lHour', label: 'L-Hour', definition: 'The time (on C-Day) deployment operations begin.' },
+  { key: 'mDay', label: 'M-Day', definition: 'The day mobilization (partial or full) begins.' },
+  { key: 'nDay', label: 'N-Day', definition: 'The day an active duty unit is notified for deployment or redeployment.' },
+] as const;
+
+/**
+ * COA Development techniques and procedures — the staff sub-tasks of Step 3.
+ * Derived from JP 5-0, Chapter IV, para 4.d(3)(a)–(u).
+ */
+export const COA_DEV_SUBTASKS = [
+  { id: 'coa-01', ref: '(a)', label: "Review mission analysis, operational approach, planning guidance, and intent", responsible: 'All Staff', description: "Ensure all staff members understand the mission and the tasks to accomplish within the commander's intent." },
+  { id: 'coa-02', ref: '(b)', label: 'Determine the COA development technique (simultaneous vs sequential)', responsible: 'J-5 / JPG Lead', description: 'The first decision in COA development. Weigh time savings against loss of team collaboration and COA distinctiveness.' },
+  { id: 'coa-03', ref: '(c)', label: 'Review objectives and tasks; develop ways to accomplish tasks', responsible: 'J-5 / J-3', description: "Refine objectives from the operational approach. Prioritize tasks considering the enemy's objectives and the need to gain advantage. Review all essential tasks from mission analysis." },
+  { id: 'coa-04', ref: '(d)', label: 'Determine timing and arrange actions across the joint functions', responsible: 'J-3 / J-5', description: 'Estimate when key tasks must occur; use phasing; integrate requirements using C2, intelligence, fires, movement and maneuver, protection, sustainment, and information.' },
+  { id: 'coa-05', ref: '(e)', label: 'Focus COAs on COGs and decisive points', responsible: 'J-2 / J-5', description: 'Review and refine enemy and friendly COG analysis based on updated intelligence, JIPOE products, and initial staff estimates. Prioritize protection of critical friendly vulnerabilities.' },
+  { id: 'coa-06', ref: '(f)', label: 'Identify sequencing of actions for each COA', responsible: 'J-3 / J-5', description: 'Simultaneous, sequential, or a combination. Understand which resources become available and when — resource availability significantly affects sequencing.' },
+  { id: 'coa-07', ref: '(g)', label: 'Identify main and supporting efforts by phase', responsible: 'J-3', description: 'Define the purposes of these efforts and the key supported/supporting relationships within each phase.' },
+  { id: 'coa-08', ref: '(h)', label: 'Identify decision points with associated CCIRs', responsible: 'J-3 / J-2', description: 'Integrate decision points and assessment criteria into the COA, anticipating decisions required from outside the command (SecDef, the President, or another command).' },
+  { id: 'coa-09', ref: '(i)', label: 'Identify component-level missions and tasks (who, what, where)', responsible: 'J-3 / Components', description: 'Component tasks framed in terms of the joint functions, displayed with graphic control measures. A designated LOO or LOE helps identify these tasks.' },
+  { id: 'coa-10', ref: '(j)', label: 'Develop outline task organization and command relationships', responsible: 'J-3 / J-1', description: 'Determine subordinate command types (Service components, functional components, subordinate joint commands) and the degree of authority delegated. Major changes normally occur at phase changes.' },
+  { id: 'coa-11', ref: '(k)', label: 'Develop the sustainment concept', responsible: 'J-4', description: 'No COA is complete without a proper sustainment plan — all classes of supply, services, distribution, transportation, OCS, disposition, and positioning of joint medical capabilities.' },
+  { id: 'coa-12', ref: '(l)', label: 'Develop the deployment concept', responsible: 'J-4 / J-3', description: 'Describe the general flow of organic and nonorganic forces into theater, force buildup, sustainment requirements, military-political considerations, and response to a contested environment.' },
+  { id: 'coa-13', ref: '(m)', label: 'Conduct nuclear planning, as required', responsible: 'J-5 / USSTRATCOM', description: 'Assess conventional-nuclear integration. Only the President has the authority to direct the planning and employment of nuclear weapons. See JP 3-72.' },
+  { id: 'coa-14', ref: '(n)', label: 'Define the Operational Area (OA)', responsible: 'J-3 / J-5', description: 'Establish geographic boundaries that facilitate coordination, integration, and deconfliction. OA size and force types depend on the scope and nature of the crisis.' },
+  { id: 'coa-15', ref: '(o)', label: 'Integrate and synchronize all-domain capabilities and effects', responsible: 'All Staff', description: 'Incorporate allied and partner operations, special access program capabilities, and asymmetric advantages matched to main or supporting efforts. Avoid siloed planning.' },
+  { id: 'coa-16', ref: '(p)', label: 'Develop initial COA sketches and statements', responsible: 'J-5', description: 'Each COA answers the nine questions: who, what, where, when, decision points, how, why, assessment, and initial intelligence support concept.' },
+  { id: 'coa-17', ref: '(q)', label: 'Test the validity of each COA', responsible: 'J-5 / Red Team', description: 'Reject any COA that fails to meet all five criteria: suitable, feasible, acceptable, distinguishable, and complete.' },
+  { id: 'coa-18', ref: '(r)', label: 'Conduct COA development brief to the commander', responsible: 'J-3 / J-5', description: 'Suggested sequence and content per JP 5-0, Figure IV-11.' },
+  { id: 'coa-19', ref: '(s)', label: "Obtain JFC guidance on COAs", responsible: 'CDR', description: 'Commander approves COA(s) for further analysis, directs revisions or combinations, and directs which enemy COA (MLCOA/MDCOA) to prioritize during wargaming.' },
+  { id: 'coa-20', ref: '(t)', label: 'Continue the staff estimate process', responsible: 'All Staff', description: 'The staff continues to conduct staff estimates of supportability for each COA.' },
+  { id: 'coa-21', ref: '(u)', label: 'Conduct vertical and horizontal concurrent planning', responsible: 'J-5 / LNOs', description: 'Coordinate with staff counterparts across functional areas, higher, adjacent, and subordinate echelons; allow lower echelons to begin planning and generate RFIs.' },
+] as const;
+
+/** COA Development Briefing sections (JP 5-0, Figure IV-11) */
+export const COA_DEV_BRIEF_SECTIONS = [
+  { id: 'cbrief-01', owner: 'J-3 / J-5', section: 'Context / background (road to war)' },
+  { id: 'cbrief-02', owner: 'J-3 / J-5', section: 'Initiation — review guidance for initiation' },
+  { id: 'cbrief-03', owner: 'J-3 / J-5', section: 'Strategic guidance — planning tasks, apportioned forces/resources, CPG/JSCP, defense agreements, theater campaign plans' },
+  { id: 'cbrief-04', owner: 'J-3 / J-5', section: 'Forces allocated / assigned' },
+  { id: 'cbrief-05', owner: 'J-3 / J-5', section: 'Reliance on commercial support' },
+  { id: 'cbrief-06', owner: 'J-2', section: 'Joint intelligence preparation of the operational environment (JIPOE)' },
+  { id: 'cbrief-07', owner: 'J-2', section: 'Enemy objectives' },
+  { id: 'cbrief-08', owner: 'J-2', section: 'Enemy COAs — most dangerous, most likely; strengths and weaknesses' },
+  { id: 'cbrief-09', owner: 'J-2', section: 'Nonmilitary threat networks effect on possible COAs' },
+  { id: 'cbrief-10', owner: 'J-3 / J-5 / J-9', section: 'Update facts and assumptions' },
+  { id: 'cbrief-11', owner: 'J-3 / J-5 / J-9', section: 'Mission statement' },
+  { id: 'cbrief-12', owner: 'J-3 / J-5 / J-9', section: "Commander's intent (purpose, method, objective)" },
+  { id: 'cbrief-13', owner: 'J-3 / J-5 / J-9', section: 'Objective political / military transition criteria' },
+  { id: 'cbrief-14', owner: 'J-3 / J-5 / J-9', section: 'Center of gravity analysis results: critical factors; strategic/operational' },
+  { id: 'cbrief-15', owner: 'J-3 / J-5 / J-9', section: 'Joint operations area / theater of operations / communications zone sketch' },
+  { id: 'cbrief-16', owner: 'J-3 / J-5 / J-9', section: 'Shaping activities recommended (for current theater campaign plan)' },
+  { id: 'cbrief-17', owner: 'J-3 / J-5 / J-9', section: 'Flexible deterrent options with desired effect' },
+  { id: 'cbrief-18', owner: 'J-3 / J-5 / J-9', section: 'For each COA — sketch and statement by phase (task org, component tasking, timeline, C2 by phase, LOO/LOE, logistics feasibility, COA risks, sync matrices)' },
+  { id: 'cbrief-19', owner: 'J-3 / J-5 / J-9', section: 'COA summarized distinctions' },
+  { id: 'cbrief-20', owner: 'J-3 / J-5 / J-9', section: 'COA priority for analysis' },
+  { id: 'cbrief-21', owner: 'J-3 / J-5 / J-9', section: 'Operations in the information environment' },
+  { id: 'cbrief-22', owner: 'J-3 / J-5 / J-9', section: 'COA risks and opportunities from friendly nonmilitary networks and friendly military forces' },
+  { id: 'cbrief-23', owner: 'J-3 / J-5 / J-9', section: 'COA risks and opportunities from neutral networks' },
+  { id: 'cbrief-24', owner: 'J-2', section: 'Red objectives (COA development briefing update)' },
+  { id: 'cbrief-25', owner: 'CDR', section: "Commander's guidance" },
+] as const;
+
+/** JFC guidance decisions at the close of Step 3 (JP 5-0, IV-39) */
+export const JFC_COA_GUIDANCE_OPTIONS = [
+  { key: 'approve', label: 'Review and approve COA(s) for further analysis' },
+  { key: 'revise', label: 'Direct revisions to a COA, combinations of COAs, or development of an additional COA' },
+  { key: 'wargame_priority', label: 'Direct priority for which enemy COA (most dangerous / most likely) to use during wargaming' },
+] as const;
