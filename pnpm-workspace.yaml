@@ -2,3 +2,9 @@ packages:
   - "apps/*"
   - "packages/*"
   - "functions"
+
+onlyBuiltDependencies:
+  - "@firebase/util"
+  - "protobufjs"
+  - "@next/swc-darwin-arm64"
+  - "esbuild"
