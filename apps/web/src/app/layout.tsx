@@ -13,11 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#0b0f14] text-slate-100 flex flex-col antialiased">
-        {/* Classification Banner */}
-        <header className="bg-[#15803d] text-white text-xs font-bold tracking-widest text-center py-1 uppercase border-b border-green-700">
-          UNCLASSIFIED // FOUO PRE-RELEASE
-        </header>
+      <body className="min-h-screen bg-[#090d13] text-slate-100 flex flex-col antialiased selection:bg-emerald-500 selection:text-slate-950">
         <main className="flex-1 flex flex-col">
           {children}
         </main>
