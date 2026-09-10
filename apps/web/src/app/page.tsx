@@ -5,9 +5,11 @@ import { JPP_PHASES, JOINT_FUNCTIONS } from '@jpe/shared';
 import { Header } from '@/components/Header';
 import { ClassificationBar } from '@/components/ClassificationBar';
 import { PhaseWizard } from '@/components/PhaseWizard';
+import { PlanningInitiation, createDefaultPlanningInitState } from '@/components/steps/PlanningInitiation';
 import { ScenarioSetupModal } from '@/components/ScenarioSetupModal';
 import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
+import { PlanningInitiationState } from '@/types/planning';
 import { 
   Shield, 
   Layers, 
@@ -52,6 +54,11 @@ export default function HomePage() {
       },
     ],
   });
+
+  // Step 1: Planning Initiation State
+  const [planningInitState, setPlanningInitState] = useState<PlanningInitiationState>(
+    () => createDefaultPlanningInitState(scenario)
+  );
 
   const phaseIcons = [
     Radio,        // Phase 1: Initiation
@@ -141,13 +148,22 @@ export default function HomePage() {
 
         {/* Phase Workspace & Right Operations Panel */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1">
-          {/* Left 3 Cols: Active Phase Interactive Wizard */}
+          {/* Left 3 Cols: Active Phase Interactive Module */}
           <div className="lg:col-span-3 flex flex-col">
-            <PhaseWizard 
-              phaseId={selectedPhase} 
-              scenario={scenario} 
-              onOpenExportModal={() => setIsExportModalOpen(true)}
-            />
+            {selectedPhase === 1 ? (
+              <PlanningInitiation
+                scenario={scenario}
+                state={planningInitState}
+                onStateChange={setPlanningInitState}
+                onOpenExportModal={() => setIsExportModalOpen(true)}
+              />
+            ) : (
+              <PhaseWizard 
+                phaseId={selectedPhase} 
+                scenario={scenario} 
+                onOpenExportModal={() => setIsExportModalOpen(true)}
+              />
+            )}
           </div>
 
           {/* Right Col: Joint Functions & Staff Estimate Trackers */}
