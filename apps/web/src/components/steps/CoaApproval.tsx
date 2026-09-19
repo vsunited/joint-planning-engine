@@ -31,6 +31,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { OperationalScenario } from '@/types/scenario';
+import { usePlanning } from '@/context/PlanningContext';
 import {
   CoaApprovalState,
   ApprovalStage,
@@ -102,13 +103,6 @@ export function createDefaultCoaApprovalState(
 // =============================================================================
 
 interface CoaApprovalProps {
-  scenario: OperationalScenario;
-  state: CoaApprovalState;
-  onStateChange: (state: CoaApprovalState) => void;
-  missionAnalysisState: MissionAnalysisState;
-  coaDevState: CoaDevelopmentState;
-  coaAnalysisState: CoaAnalysisState;
-  coaComparisonState: CoaComparisonState;
   onOpenExportModal: () => void;
 }
 
@@ -1025,15 +1019,17 @@ const StageEstimate: React.FC<{
 // =============================================================================
 
 export const CoaApproval: React.FC<CoaApprovalProps> = ({
-  scenario,
-  state,
-  onStateChange,
-  missionAnalysisState,
-  coaDevState,
-  coaAnalysisState,
-  coaComparisonState,
   onOpenExportModal,
 }) => {
+  const {
+    scenario,
+    coaApproval: state,
+    setCoaApproval: onStateChange,
+    missionAnalysis: missionAnalysisState,
+    coaDevelopment: coaDevState,
+    coaAnalysis: coaAnalysisState,
+    coaComparison: coaComparisonState,
+  } = usePlanning();
   const [generating, setGenerating] = useState(false);
 
   const upstream: UpstreamStates = {

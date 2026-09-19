@@ -29,6 +29,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { OperationalScenario } from '@/types/scenario';
+import { usePlanning } from '@/context/PlanningContext';
 import {
   CoaComparisonState,
   CoaDevelopmentState,
@@ -93,13 +94,6 @@ export function createDefaultCoaComparisonState(
 // =============================================================================
 
 interface CoaComparisonProps {
-  scenario: OperationalScenario;
-  state: CoaComparisonState;
-  onStateChange: (state: CoaComparisonState) => void;
-  /** Step 3 — the COAs under comparison */
-  coaDevState: CoaDevelopmentState;
-  /** Step 4 — wargame results, advantages and disadvantages (Fig IV-14 inputs) */
-  coaAnalysisState: CoaAnalysisState;
   onOpenExportModal: () => void;
 }
 
@@ -1133,13 +1127,17 @@ const RecommendationTab: React.FC<{
 // =============================================================================
 
 export const CoaComparison: React.FC<CoaComparisonProps> = ({
-  scenario,
-  state,
-  onStateChange,
-  coaDevState,
-  coaAnalysisState,
   onOpenExportModal,
 }) => {
+  const {
+    scenario,
+    coaComparison: state,
+    setCoaComparison: onStateChange,
+    // Step 3 — the COAs under comparison
+    coaDevelopment: coaDevState,
+    // Step 4 — wargame results, advantages and disadvantages (Fig IV-14 inputs)
+    coaAnalysis: coaAnalysisState,
+  } = usePlanning();
   const [activeTab, setActiveTab] = useState<TabId>('criteria');
   const [generating, setGenerating] = useState(false);
   const { comparable, discarded } = useComparableCoas(coaDevState, coaAnalysisState);
