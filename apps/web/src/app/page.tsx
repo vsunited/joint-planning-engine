@@ -10,10 +10,11 @@ import { MissionAnalysis, createDefaultMissionAnalysisState } from '@/components
 import { CoaDevelopment, createDefaultCoaDevelopmentState } from '@/components/steps/CoaDevelopment';
 import { CoaAnalysis, createDefaultCoaAnalysisState } from '@/components/steps/CoaAnalysis';
 import { CoaComparison, createDefaultCoaComparisonState } from '@/components/steps/CoaComparison';
+import { CoaApproval, createDefaultCoaApprovalState } from '@/components/steps/CoaApproval';
 import { ScenarioSetupModal } from '@/components/ScenarioSetupModal';
 import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
-import { PlanningInitiationState, MissionAnalysisState, CoaDevelopmentState, CoaAnalysisState, CoaComparisonState } from '@/types/planning';
+import { PlanningInitiationState, MissionAnalysisState, CoaDevelopmentState, CoaAnalysisState, CoaComparisonState, CoaApprovalState } from '@/types/planning';
 import { LoginScreen } from '@/components/LoginScreen';
 import { authService } from '@/lib/authService';
 import { 
@@ -107,6 +108,11 @@ export default function HomePage() {
   // Step 5: COA Comparison State
   const [coaComparisonState, setCoaComparisonState] = useState<CoaComparisonState>(
     () => createDefaultCoaComparisonState(scenario, missionAnalysisState)
+  );
+
+  // Step 6: COA Approval State
+  const [coaApprovalState, setCoaApprovalState] = useState<CoaApprovalState>(
+    () => createDefaultCoaApprovalState(scenario)
   );
 
   const phaseIcons = [
@@ -247,6 +253,17 @@ export default function HomePage() {
                 onStateChange={setCoaComparisonState}
                 coaDevState={coaDevelopmentState}
                 coaAnalysisState={coaAnalysisState}
+                onOpenExportModal={() => setIsExportModalOpen(true)}
+              />
+            ) : selectedPhase === 6 ? (
+              <CoaApproval
+                scenario={scenario}
+                state={coaApprovalState}
+                onStateChange={setCoaApprovalState}
+                missionAnalysisState={missionAnalysisState}
+                coaDevState={coaDevelopmentState}
+                coaAnalysisState={coaAnalysisState}
+                coaComparisonState={coaComparisonState}
                 onOpenExportModal={() => setIsExportModalOpen(true)}
               />
             ) : (

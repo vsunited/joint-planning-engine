@@ -666,3 +666,77 @@ export interface CoaComparisonState {
   outputCompletion: Record<string, boolean>;
   notes: string;
 }
+
+// =============================================================================
+// Step 6: COA Approval — Type Definitions
+// JP 5-0, Chapter IV, para 4.g, Figures IV-15 and IV-16
+// =============================================================================
+
+/** The six decisions available to the commander (JP 5-0, IV-56) */
+export type CommanderDecisionType =
+  | 'concur'
+  | 'concur_with_mods'
+  | 'select_different'
+  | 'combine'
+  | 'reject_all'
+  | 'defer'
+  | 'undecided';
+
+/** Wizard stage */
+export type ApprovalStage = 1 | 2 | 3 | 4;
+
+/** One section of the COA decision briefing (JP 5-0, Figure IV-16) */
+export interface DecisionBriefSection {
+  id: string;
+  section: string;
+  prepared: boolean;
+  presenter: string;
+  notes: string;
+}
+
+/**
+ * The commander's decision.
+ *
+ * `selectedCoaIds` is an array because the JFC may present two or more valid
+ * COAs to higher authority where the objective cannot be determined until the
+ * crisis occurs (JP 5-0, IV-54), and because "combine" spans multiple COAs.
+ */
+export interface CommanderDecision {
+  type: CommanderDecisionType;
+  selectedCoaIds: string[];
+  modifications: string;
+  rationale: string;
+  decidedDtg: string;
+  /** Who will be consulted, when 'defer' is chosen */
+  deferConsultation: string;
+  /** Where planning restarts, when 'reject_all' is chosen */
+  restartAt: 'step_2' | 'step_3';
+  reviewCompletion: Record<string, boolean>;
+}
+
+/** The refined decision statement (JP 5-0, IV-56 to IV-57) */
+export interface DecisionStatement {
+  statement: string;
+  acceptableRisk: string;
+  acceptabilityCheck: Record<string, boolean>;
+}
+
+/** The commander's estimate (JP 5-0, IV-57) */
+export interface CommandersEstimate {
+  narrative: string;
+  refinedIntent: string;
+  higherApprovalRequired: boolean;
+  higherApprovalAuthority: string;
+  notes: string;
+}
+
+/** Top-level Step 6 state */
+export interface CoaApprovalState {
+  stage: ApprovalStage;
+  briefSections: DecisionBriefSection[];
+  attendance: Record<string, boolean>;
+  decision: CommanderDecision;
+  decisionStatement: DecisionStatement;
+  estimate: CommandersEstimate;
+  outputCompletion: Record<string, boolean>;
+}

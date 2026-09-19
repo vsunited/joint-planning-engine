@@ -730,3 +730,200 @@ export const CRITERIA_DEFINITION_STEPS = [
   { id: 'cds-05', label: 'Establish definitions before commencing comparison, to avoid compromising the outcome', phase: 'define' },
   { id: 'cds-06', label: 'Apply the standard for each criterion to each COA', phase: 'define' },
 ] as const;
+
+// =============================================================================
+// Step 6: COA Approval — Doctrinal Constants
+// JP 5-0, Chapter IV, para 4.g "COA Approval (Step 6)" (pp. IV-54 to IV-57),
+// Figure IV-15 and Figure IV-16
+// =============================================================================
+
+/** Key Inputs to COA Approval (JP 5-0, Figure IV-15) */
+export const COA_APPROVAL_KEY_INPUTS = [
+  { id: 'apin-01', label: 'Refined COAs', source: 'Step 4' },
+  { id: 'apin-02', label: 'Staff recommendation', source: 'Step 5' },
+  { id: 'apin-03', label: "Joint force commander's personal analysis (experience and judgment)", source: 'JFC' },
+] as const;
+
+/** Key Outputs of COA Approval (JP 5-0, Figure IV-15) */
+export const COA_APPROVAL_KEY_OUTPUTS = [
+  { id: 'apout-01', label: 'COA modifications' },
+  { id: 'apout-02', label: "JFC's COA selection" },
+  { id: 'apout-03', label: "Commander's estimate (if required)" },
+  { id: 'apout-04', label: "Refined commander's intent" },
+] as const;
+
+/**
+ * Sample COA Decision Briefing Guide (JP 5-0, Figure IV-16).
+ * `sourceStep` names where the application can prefill the section from, so the
+ * brief is assembled from prior steps rather than re-entered.
+ */
+export const COA_DECISION_BRIEF_GUIDE = [
+  {
+    id: 'db-01',
+    section: 'Purpose of the briefing',
+    sourceStep: null,
+    items: [],
+  },
+  {
+    id: 'db-02',
+    section: 'Opposing situation',
+    sourceStep: 'Step 2 — JIPOE',
+    items: [
+      'Strength — opposing forces, both committed and available for reinforcement',
+      'Composition — order of battle, major weapons systems, and operational characteristics (air, ground, space, electromagnetic warfare, cyberspace)',
+      'Location and disposition — ground combat and fire support; air, naval, and missile forces; logistics forces and nodes; C2 facilities; forces contesting blue deployments',
+      'Reinforcements — land, air, naval, missile, CBRN, other advanced weapons systems; capacity for movement',
+      'Logistics — ability of opposing forces to support combat operations',
+      'Time and space factors — capacity to move and reinforce positions',
+      'Combat efficiency — training, readiness, battle experience, physical condition, morale, leadership, motivation, tactical doctrine, discipline, strengths and weaknesses',
+    ],
+  },
+  {
+    id: 'db-03',
+    section: 'Nonmilitary threat networks',
+    sourceStep: 'Step 2 — JIPOE',
+    items: ['Flexible format depending on situation and mission'],
+  },
+  {
+    id: 'db-04',
+    section: 'Friendly situation',
+    sourceStep: 'Step 2 — Staff Estimates',
+    items: ['Similar elements as the opposing situation'],
+  },
+  {
+    id: 'db-05',
+    section: 'Nonmilitary neutral networks',
+    sourceStep: 'Step 2 — JIPOE',
+    items: ['Flexible format depending on situation and mission'],
+  },
+  {
+    id: 'db-06',
+    section: "Commander's intent statement",
+    sourceStep: 'Step 2 — Commander’s Intent',
+    items: [],
+  },
+  {
+    id: 'db-07',
+    section: 'Changes since the mission analysis briefing',
+    sourceStep: 'Step 2 / Step 3',
+    items: [
+      'Assumptions',
+      'Limitations',
+      'Adversary and friendly centers of gravity',
+      'Phasing of the operation (if phased)',
+    ],
+  },
+  {
+    id: 'db-08',
+    section: 'Present COAs',
+    sourceStep: 'Step 3 — COA Development',
+    items: [
+      'COA number and short name',
+      'COA statement (brief concept of operations)',
+      'COA sketch',
+      'COA architecture — task organization, command relationships, organization of the operational area',
+      'Major differences between each COA',
+      'Summaries of COAs',
+    ],
+  },
+  {
+    id: 'db-09',
+    section: 'COA analysis',
+    sourceStep: 'Step 4 — Wargaming',
+    items: [
+      "Review of the joint planning group's wargaming efforts",
+      'Considerations added from own experience',
+    ],
+  },
+  {
+    id: 'db-10',
+    section: 'COA comparisons',
+    sourceStep: 'Step 5 — Comparison',
+    items: [
+      'Description of comparison criteria and comparison methodology',
+      'Strengths and weaknesses weighed with respect to the comparison criteria',
+    ],
+  },
+  {
+    id: 'db-11',
+    section: 'COA recommendations',
+    sourceStep: 'Step 5 — Recommendation',
+    items: ['Staff recommendation', 'Component recommendations'],
+  },
+] as const;
+
+/** Who should attend the decision briefing (JP 5-0, IV-55) */
+export const DECISION_BRIEF_ATTENDEES = [
+  'All principal staff directors',
+  'Component commanders',
+] as const;
+
+/** What the commander should do before deciding (JP 5-0, IV-55 to IV-56) */
+export const COMMANDER_REVIEW_ACTIONS = [
+  { id: 'cra-01', label: 'Review staff recommendations' },
+  { id: 'cra-02', label: 'Apply results of own COA analysis and comparison' },
+  { id: 'cra-03', label: 'Consider any separate recommendations from supporting and subordinate commanders' },
+  { id: 'cra-04', label: 'Review guidance from higher headquarters / strategic guidance' },
+] as const;
+
+/** The six decisions available to the commander (JP 5-0, IV-56) */
+export const COMMANDER_DECISION_OPTIONS = [
+  {
+    key: 'concur',
+    label: 'Concur as presented',
+    description: 'Concur with staff and component recommendations as briefed.',
+    consequence: 'The recommended COA proceeds to plan or order development unchanged.',
+    tone: 'approve',
+  },
+  {
+    key: 'concur_with_mods',
+    label: 'Concur with modifications',
+    description: 'Concur with the recommended COA, but direct changes.',
+    consequence: 'The COA proceeds once the staff incorporates the directed modifications.',
+    tone: 'approve',
+  },
+  {
+    key: 'select_different',
+    label: 'Select a different COA',
+    description: 'Choose a COA other than the one the staff recommended.',
+    consequence: 'The selected COA proceeds; record why the recommendation was not adopted.',
+    tone: 'neutral',
+  },
+  {
+    key: 'combine',
+    label: 'Combine COAs',
+    description: 'Combine elements of two or more COAs to create a new one.',
+    consequence: 'The staff builds the combined COA before plan development begins.',
+    tone: 'neutral',
+  },
+  {
+    key: 'reject_all',
+    label: 'Reject all and start over',
+    description: 'Reject every COA and restart at COA development or mission analysis.',
+    consequence: 'Planning returns to Step 3 or Step 2. Nothing proceeds from this step.',
+    tone: 'reject',
+  },
+  {
+    key: 'defer',
+    label: 'Defer the decision',
+    description: 'Consult selected staff and commanders before deciding.',
+    consequence: 'No COA is approved yet; record who will be consulted and by when.',
+    tone: 'defer',
+  },
+] as const;
+
+/** Rules for the decision statement (JP 5-0, IV-56) */
+export const DECISION_STATEMENT_RULES = [
+  { id: 'dsr-01', label: 'Clear and concise, setting forth the COA selected — there is no defined format' },
+  { id: 'dsr-02', label: 'Describe what the force is to do, with as much of when, where, and how as is appropriate' },
+  { id: 'dsr-03', label: 'Express the decision in terms of what to accomplish, if possible' },
+  { id: 'dsr-04', label: 'Use simple language so the meaning is unmistakable' },
+  { id: 'dsr-05', label: 'Include a statement of what is acceptable risk' },
+  { id: 'dsr-06', label: 'Recognize that many simulations cannot capture qualitative data within the information environment' },
+] as const;
+
+/** Final acceptability check applied to the selected COA (JP 5-0, IV-57) */
+export const ACCEPTABILITY_CHECK_ITEMS = [
+  { id: 'aci-01', label: 'Apply experience and an understanding of the situation' },
+  { id: 'aci-02', label: "Weigh acceptable risk against desired objectives, consistent with the higher commander's intent and concept — determine if gains are worth expenditures" },
+] as const;
