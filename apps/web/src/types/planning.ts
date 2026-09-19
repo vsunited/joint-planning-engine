@@ -740,3 +740,110 @@ export interface CoaApprovalState {
   estimate: CommandersEstimate;
   outputCompletion: Record<string, boolean>;
 }
+
+// =============================================================================
+// Step 7: Plan or Order Development — Type Definitions
+// JP 5-0, Chapter IV, para 4.h and Figure IV-17
+// =============================================================================
+
+/** Order product being produced */
+export type OrderProductType =
+  | 'OPLAN'
+  | 'CONPLAN'
+  | 'OPORD'
+  | 'WARNORD'
+  | 'PLANORD'
+  | 'FRAGORD';
+
+/** Progress state used across plan development activities */
+export type ActivityStatus = 'not_started' | 'in_progress' | 'complete';
+
+/**
+ * The refined CONOPS — the centerpiece of the plan or OPORD.
+ * Keys mirror CONOPS_REQUIREMENTS so each doctrinal requirement has a field.
+ */
+export interface RefinedConops {
+  commandersIntent: string;
+  centralApproach: string;
+  schemeOfManeuver: string;
+  conditions: string;
+  cogFocus: string;
+  tempo: string;
+  campaignVisualization: string;
+  objectiveLinkage: string;
+  /** Outlined as a campaign where scope, complexity, and duration warrant it */
+  isCampaign: boolean;
+}
+
+/**
+ * A plan development activity (JP 5-0, Figure IV-17). These run concurrently
+ * and iteratively rather than in sequence.
+ */
+export interface PlanDevelopmentActivity {
+  id: string;
+  status: ActivityStatus;
+  lead: string;
+  notes: string;
+}
+
+/** A TPFDD line — the link between the CONOPS and force planning (IV-59) */
+export interface TpfddEntry {
+  id: string;
+  unit: string;
+  category: string;
+  origin: string;
+  destination: string;
+  requiredDeliveryDate: string;
+  notes: string;
+}
+
+/** A shortfall or conflict discovered during plan development */
+export interface PlanShortfall {
+  id: string;
+  description: string;
+  activityId: string;
+  severity: 'low' | 'medium' | 'high';
+  resolution: string;
+  resolved: boolean;
+}
+
+/** A supporting plan owed by a subordinate or supporting command */
+export interface SupportingPlan {
+  id: string;
+  command: string;
+  planName: string;
+  status: ActivityStatus;
+  dueDtg: string;
+}
+
+/** In-progress review with SecDef or designated representative (IV-59) */
+export interface InProgressReview {
+  outcome: 'endorsed' | 'friction' | 'not_held';
+  heldDtg: string;
+  confirmationItems: Record<string, boolean>;
+  frictionPoints: string;
+  guidanceForRefinement: string;
+}
+
+/** The order document being produced */
+export interface OrderDocument {
+  type: OrderProductType;
+  number: string;
+  title: string;
+  effectiveDtg: string;
+  /** CJCS review criteria (IV-59) */
+  reviewCriteria: Record<string, boolean>;
+  documentationNotes: string;
+}
+
+/** Top-level Step 7 state */
+export interface PlanOrderDevelopmentState {
+  conops: RefinedConops;
+  activities: PlanDevelopmentActivity[];
+  tpfdd: TpfddEntry[];
+  shortfalls: PlanShortfall[];
+  supportingPlans: SupportingPlan[];
+  ipr: InProgressReview;
+  order: OrderDocument;
+  notes: string;
+}

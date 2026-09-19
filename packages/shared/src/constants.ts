@@ -927,3 +927,96 @@ export const ACCEPTABILITY_CHECK_ITEMS = [
   { id: 'aci-01', label: 'Apply experience and an understanding of the situation' },
   { id: 'aci-02', label: "Weigh acceptable risk against desired objectives, consistent with the higher commander's intent and concept — determine if gains are worth expenditures" },
 ] as const;
+
+// =============================================================================
+// Step 7: Plan or Order Development — Doctrinal Constants
+// JP 5-0, Chapter IV, para 4.h "Plan or Order Development (Step 7)"
+// (pp. IV-58 to IV-60) and Figure IV-17
+// =============================================================================
+
+/**
+ * What the CONOPS does. The CONOPS is the centerpiece of the plan or OPORD —
+ * plan development expands the approved COA by refining it.
+ * JP 5-0, IV-58, para (1)(a).
+ */
+export const CONOPS_REQUIREMENTS = [
+  { id: 'cr-01', key: 'commandersIntent', label: "States the commander's intent" },
+  { id: 'cr-02', key: 'centralApproach', label: 'Describes the central approach the JFC intends to take to accomplish the mission' },
+  { id: 'cr-03', key: 'schemeOfManeuver', label: 'Describes a scheme of maneuver articulating the application, arranging, sequencing, and integration of forces and capabilities in time and space' },
+  { id: 'cr-04', key: 'conditions', label: 'Describes when, where, and under what conditions the commander intends to conduct operations, and give or refuse battle if required' },
+  { id: 'cr-05', key: 'cogFocus', label: 'Focuses on friendly, allied, partner, and enemy COGs and their associated critical vulnerabilities' },
+  { id: 'cr-06', key: 'tempo', label: 'Provides for controlling the tempo of the operation' },
+  { id: 'cr-07', key: 'campaignVisualization', label: 'Visualizes the campaign in terms of the forces and functions involved' },
+  { id: 'cr-08', key: 'objectiveLinkage', label: "Relates the joint force's objectives and desired effects to those of the next higher command, enabling assignment of tasks to subordinate and supporting commanders" },
+] as const;
+
+/**
+ * Plan development activities (JP 5-0, Figure IV-17).
+ * These "typically occur in a concurrent, collaborative, and iterative fashion
+ * rather than sequentially, depending largely on the planning time available."
+ */
+export const PLAN_DEVELOPMENT_ACTIVITIES = [
+  { id: 'pda-01', label: 'Force planning', description: 'Sequencing forces into the operational area, maintaining unit integrity, force mobility, and force visibility.' },
+  { id: 'pda-02', label: 'Support planning', description: 'Sustainment, engineering, medical, and other supporting concepts required to execute the CONOPS.' },
+  { id: 'pda-03', label: 'Deployment and redeployment planning', description: 'Flow of forces into and out of theater, captured in the TPFDD as required delivery dates.' },
+  { id: 'pda-04', label: 'Shortfall identification', description: 'Discover and eliminate shortfalls and conflicts within the command and with other CCMDs.' },
+  { id: 'pda-05', label: 'Feasibility analysis', description: 'Confirm the plan is executable with the forces, support, and time available.' },
+  { id: 'pda-06', label: 'Refinement', description: 'Iterative improvement of the CONOPS and supporting concepts as detail emerges.' },
+  { id: 'pda-07', label: 'Documentation', description: 'Producing the plan in the format of an order per CJCSM 3130.03.' },
+  { id: 'pda-08', label: 'Plan review and approval', description: 'CJCS review for adequacy, feasibility, acceptability, completeness, and compliance with policy and joint doctrine.' },
+  { id: 'pda-09', label: 'Supporting plan development', description: 'Subordinate and supporting commands develop plans that support the approved CONOPS.' },
+] as const;
+
+/**
+ * Criteria the CJCS applies when reviewing the supported commander's plan.
+ * JP 5-0, IV-59, para (2)(a).
+ */
+export const PLAN_REVIEW_CRITERIA = [
+  { id: 'prc-01', label: 'Adequacy' },
+  { id: 'prc-02', label: 'Feasibility' },
+  { id: 'prc-03', label: 'Acceptability' },
+  { id: 'prc-04', label: 'Completeness' },
+  { id: 'prc-05', label: 'Compliance with policy and joint doctrine' },
+] as const;
+
+/**
+ * What an in-progress review with SecDef confirms (JP 5-0, IV-59).
+ * The result should be an endorsement of planning to date, or acknowledgement
+ * of friction points and guidance to shape continued planning.
+ */
+export const IPR_CONFIRMATION_ITEMS = [
+  { id: 'ipr-01', label: 'Strategic guidance' },
+  { id: 'ipr-02', label: 'Assumptions, including timing and national-level decisions required' },
+  { id: 'ipr-03', label: 'Limitations — restrictions and constraints' },
+  { id: 'ipr-04', label: 'Mission statement' },
+  { id: 'ipr-05', label: 'Operational approach' },
+  { id: 'ipr-06', label: 'Key capability shortfalls' },
+  { id: 'ipr-07', label: 'Areas of risk and acceptable levels of risk' },
+  { id: 'ipr-08', label: 'Further guidance required for plan refinement' },
+] as const;
+
+/** IPR outcome (JP 5-0, IV-60) */
+export const IPR_OUTCOMES = [
+  { key: 'endorsed', label: 'Endorsement of planning to date' },
+  { key: 'friction', label: 'Acknowledgement of friction points, with guidance to shape continued planning' },
+  { key: 'not_held', label: 'Not yet held' },
+] as const;
+
+/** Order products produced during this step */
+export const ORDER_PRODUCT_TYPES = [
+  { key: 'OPLAN', label: 'Operation Plan (OPLAN)', description: 'A complete and detailed plan for the conduct of joint operations.' },
+  { key: 'CONPLAN', label: 'Concept Plan (CONPLAN)', description: 'An operation plan in an abbreviated format, may require expansion into an OPLAN.' },
+  { key: 'OPORD', label: 'Operation Order (OPORD)', description: 'A directive issued to subordinate commanders to effect the coordinated execution of an operation.' },
+  { key: 'WARNORD', label: 'Warning Order (WARNORD)', description: 'Initiates or updates subordinate planning; does not authorize execution.' },
+  { key: 'PLANORD', label: 'Planning Order (PLANORD)', description: 'Directs plan development and coordinates the activities of commands and agencies involved.' },
+  { key: 'FRAGORD', label: 'Fragmentary Order (FRAGORD)', description: 'Issues changes to an existing order without restating the whole order.' },
+] as const;
+
+/** TPFDD entry force categories, linking the CONOPS to force planning (IV-59) */
+export const TPFDD_FORCE_CATEGORIES = [
+  'Combat',
+  'Combat Support',
+  'Combat Service Support',
+  'Enabling / Early Entry',
+  'Sustainment',
+] as const;

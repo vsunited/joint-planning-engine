@@ -9,6 +9,7 @@ import {
   CoaAnalysisState,
   CoaComparisonState,
   CoaApprovalState,
+  PlanOrderDevelopmentState,
 } from '@/types/planning';
 
 /**
@@ -28,6 +29,7 @@ export interface PlanningState {
   coaAnalysis: CoaAnalysisState;
   coaComparison: CoaComparisonState;
   coaApproval: CoaApprovalState;
+  planOrderDevelopment: PlanOrderDevelopmentState;
 }
 
 interface PlanningContextValue extends PlanningState {
@@ -38,6 +40,7 @@ interface PlanningContextValue extends PlanningState {
   setCoaAnalysis: (value: CoaAnalysisState) => void;
   setCoaComparison: (value: CoaComparisonState) => void;
   setCoaApproval: (value: CoaApprovalState) => void;
+  setPlanOrderDevelopment: (value: PlanOrderDevelopmentState) => void;
 }
 
 const PlanningContext = createContext<PlanningContextValue | null>(null);
@@ -82,6 +85,12 @@ export const PlanningProvider: React.FC<{
     []
   );
 
+  const setPlanOrderDevelopment = useCallback(
+    (planOrderDevelopment: PlanOrderDevelopmentState) =>
+      setState(s => ({ ...s, planOrderDevelopment })),
+    []
+  );
+
   const value = useMemo<PlanningContextValue>(
     () => ({
       ...state,
@@ -92,6 +101,7 @@ export const PlanningProvider: React.FC<{
       setCoaAnalysis,
       setCoaComparison,
       setCoaApproval,
+      setPlanOrderDevelopment,
     }),
     [
       state,
@@ -102,6 +112,7 @@ export const PlanningProvider: React.FC<{
       setCoaAnalysis,
       setCoaComparison,
       setCoaApproval,
+      setPlanOrderDevelopment,
     ]
   );
 

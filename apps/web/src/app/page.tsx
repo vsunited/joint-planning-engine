@@ -11,6 +11,7 @@ import { CoaDevelopment, createDefaultCoaDevelopmentState } from '@/components/s
 import { CoaAnalysis, createDefaultCoaAnalysisState } from '@/components/steps/CoaAnalysis';
 import { CoaComparison, createDefaultCoaComparisonState } from '@/components/steps/CoaComparison';
 import { CoaApproval, createDefaultCoaApprovalState } from '@/components/steps/CoaApproval';
+import { PlanOrderDevelopment, createDefaultPlanOrderDevelopmentState } from '@/components/steps/PlanOrderDevelopment';
 import { ScenarioSetupModal } from '@/components/ScenarioSetupModal';
 import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
@@ -74,6 +75,7 @@ function createInitialPlanningState(scenario: OperationalScenario): PlanningStat
     // Step 5 seeds its criteria from the criteria established in Step 2.
     coaComparison: createDefaultCoaComparisonState(scenario, missionAnalysis),
     coaApproval: createDefaultCoaApprovalState(scenario),
+    planOrderDevelopment: createDefaultPlanOrderDevelopmentState(scenario),
   };
 }
 
@@ -237,6 +239,8 @@ function PlanningWorkspace() {
               <CoaComparison onOpenExportModal={openExportModal} />
             ) : selectedPhase === 6 ? (
               <CoaApproval onOpenExportModal={openExportModal} />
+            ) : selectedPhase === 7 ? (
+              <PlanOrderDevelopment onOpenExportModal={openExportModal} />
             ) : (
               <PhaseWizard
                 phaseId={selectedPhase}
