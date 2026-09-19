@@ -35,6 +35,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { OperationalScenario } from '@/types/scenario';
+import { usePlanning } from '@/context/PlanningContext';
 import {
   CoaDevelopmentState,
   CourseOfAction,
@@ -181,9 +182,6 @@ export function createDefaultCoaDevelopmentState(
 // =============================================================================
 
 interface CoaDevelopmentProps {
-  scenario: OperationalScenario;
-  state: CoaDevelopmentState;
-  onStateChange: (state: CoaDevelopmentState) => void;
   onOpenExportModal: () => void;
 }
 
@@ -1648,11 +1646,9 @@ const BriefTab: React.FC<{
 // =============================================================================
 
 export const CoaDevelopment: React.FC<CoaDevelopmentProps> = ({
-  scenario,
-  state,
-  onStateChange,
   onOpenExportModal,
 }) => {
+  const { scenario, coaDevelopment: state, setCoaDevelopment: onStateChange } = usePlanning();
   const [activeTab, setActiveTab] = useState<TabId>('inputs');
   const [generating, setGenerating] = useState(false);
   const [activeCoaId, setActiveCoaId] = useState<string>(state.coas[0]?.id || '');

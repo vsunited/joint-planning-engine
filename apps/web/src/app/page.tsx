@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { JPP_PHASES, JOINT_FUNCTIONS } from '@jpe/shared';
 import { Header } from '@/components/Header';
 import { ClassificationBar } from '@/components/ClassificationBar';
@@ -14,29 +14,72 @@ import { CoaApproval, createDefaultCoaApprovalState } from '@/components/steps/C
 import { ScenarioSetupModal } from '@/components/ScenarioSetupModal';
 import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
-import { PlanningInitiationState, MissionAnalysisState, CoaDevelopmentState, CoaAnalysisState, CoaComparisonState, CoaApprovalState } from '@/types/planning';
+import { PlanningProvider, PlanningState, usePlanning } from '@/context/PlanningContext';
 import { LoginScreen } from '@/components/LoginScreen';
 import { authService } from '@/lib/authService';
-import { 
-  Shield, 
-  Layers, 
+import {
+  Shield,
+  Layers,
   Radio,
   Eye,
   Crosshair,
-  Award, 
-  FileText, 
-  Sparkles,
+  Award,
+  FileText,
   FileCheck,
   FolderPlus
 } from 'lucide-react';
 
+/** Default scenario used to seed a fresh planning workspace. */
+const DEFAULT_SCENARIO: OperationalScenario = {
+  jtfName: 'JTF-Horn of Africa',
+  operationName: 'Sentinel Resolve',
+  commandingOfficer: 'MAJ D. Hess',
+  officerRole: 'Lead J5 Operational Planner',
+  serviceBranch: 'Joint Staff',
+  operationalEchelon: 'Joint Task Force HQ',
+  higherHq: 'USAFRICOM',
+  aorRegion: 'Bab-el-Mandeb & Western Indian Ocean',
+  classification: 'UNCLASSIFIED',
+  uploadedDocuments: [
+    {
+      name: 'USAFRICOM_PLANORD_26-04.pdf',
+      size: '4.20 MB',
+      type: 'application/pdf',
+      uploadedAt: '08:45',
+    },
+    {
+      name: 'JIPOE_Red_Sea_Maritime_Threat_Estimate.pdf',
+      size: '12.80 MB',
+      type: 'application/pdf',
+      uploadedAt: '09:12',
+    },
+  ],
+};
+
+/**
+ * Builds the initial planning workspace.
+ *
+ * Constructed here rather than inside `PlanningContext` so that module never
+ * has to import the step components — they import `usePlanning` from it, and
+ * importing their factories back would create a cycle.
+ */
+function createInitialPlanningState(scenario: OperationalScenario): PlanningState {
+  const missionAnalysis = createDefaultMissionAnalysisState(scenario);
+  return {
+    scenario,
+    planningInit: createDefaultPlanningInitState(scenario),
+    missionAnalysis,
+    coaDevelopment: createDefaultCoaDevelopmentState(scenario),
+    coaAnalysis: createDefaultCoaAnalysisState(scenario),
+    // Step 5 seeds its criteria from the criteria established in Step 2.
+    coaComparison: createDefaultCoaComparisonState(scenario, missionAnalysis),
+    coaApproval: createDefaultCoaApprovalState(scenario),
+  };
+}
+
 export default function HomePage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
-  
-  const [selectedPhase, setSelectedPhase] = useState<number>(1);
-  const [isScenarioModalOpen, setIsScenarioModalOpen] = useState<boolean>(false);
-  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
   // Initialize auth listener
   React.useEffect(() => {
@@ -58,72 +101,7 @@ export default function HomePage() {
     return () => unsubscribe();
   }, []);
 
-  // Operational Scenario State (Default initial scenario for demonstration)
-  const [scenario, setScenario] = useState<OperationalScenario>({
-    jtfName: 'JTF-Horn of Africa',
-    operationName: 'Sentinel Resolve',
-    commandingOfficer: 'MAJ D. Hess',
-    officerRole: 'Lead J5 Operational Planner',
-    serviceBranch: 'Joint Staff',
-    operationalEchelon: 'Joint Task Force HQ',
-    higherHq: 'USAFRICOM',
-    aorRegion: 'Bab-el-Mandeb & Western Indian Ocean',
-    classification: 'UNCLASSIFIED',
-    uploadedDocuments: [
-      {
-        name: 'USAFRICOM_PLANORD_26-04.pdf',
-        size: '4.20 MB',
-        type: 'application/pdf',
-        uploadedAt: '08:45',
-      },
-      {
-        name: 'JIPOE_Red_Sea_Maritime_Threat_Estimate.pdf',
-        size: '12.80 MB',
-        type: 'application/pdf',
-        uploadedAt: '09:12',
-      },
-    ],
-  });
-
-  // Step 1: Planning Initiation State
-  const [planningInitState, setPlanningInitState] = useState<PlanningInitiationState>(
-    () => createDefaultPlanningInitState(scenario)
-  );
-
-  // Step 2: Mission Analysis State
-  const [missionAnalysisState, setMissionAnalysisState] = useState<MissionAnalysisState>(
-    () => createDefaultMissionAnalysisState(scenario)
-  );
-
-  // Step 3: COA Development State
-  const [coaDevelopmentState, setCoaDevelopmentState] = useState<CoaDevelopmentState>(
-    () => createDefaultCoaDevelopmentState(scenario)
-  );
-
-  // Step 4: COA Analysis & Wargaming State
-  const [coaAnalysisState, setCoaAnalysisState] = useState<CoaAnalysisState>(
-    () => createDefaultCoaAnalysisState(scenario)
-  );
-
-  // Step 5: COA Comparison State
-  const [coaComparisonState, setCoaComparisonState] = useState<CoaComparisonState>(
-    () => createDefaultCoaComparisonState(scenario, missionAnalysisState)
-  );
-
-  // Step 6: COA Approval State
-  const [coaApprovalState, setCoaApprovalState] = useState<CoaApprovalState>(
-    () => createDefaultCoaApprovalState(scenario)
-  );
-
-  const phaseIcons = [
-    Radio,        // Phase 1: Initiation
-    Eye,          // Phase 2: Mission Analysis
-    Crosshair,    // Phase 3: COA Dev
-    Layers,       // Phase 4: COA Analysis / Wargaming
-    FileCheck,    // Phase 5: COA Comparison
-    Award,        // Phase 6: COA Approval
-    FileText,     // Phase 7: Order Production
-  ];
+  const initialState = useMemo(() => createInitialPlanningState(DEFAULT_SCENARIO), []);
 
   if (isAuthLoading) {
     return (
@@ -138,14 +116,44 @@ export default function HomePage() {
   }
 
   return (
+    <PlanningProvider initialState={initialState}>
+      <PlanningWorkspace />
+    </PlanningProvider>
+  );
+}
+
+/**
+ * The planning dashboard. Step modules pull their own slice from the planning
+ * context, so this only owns which phase is showing and the modals.
+ */
+function PlanningWorkspace() {
+  const { scenario, setScenario } = usePlanning();
+
+  const [selectedPhase, setSelectedPhase] = useState<number>(1);
+  const [isScenarioModalOpen, setIsScenarioModalOpen] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+
+  const openExportModal = () => setIsExportModalOpen(true);
+
+  const phaseIcons = [
+    Radio,        // Phase 1: Initiation
+    Eye,          // Phase 2: Mission Analysis
+    Crosshair,    // Phase 3: COA Dev
+    Layers,       // Phase 4: COA Analysis / Wargaming
+    FileCheck,    // Phase 5: COA Comparison
+    Award,        // Phase 6: COA Approval
+    FileText,     // Phase 7: Order Production
+  ];
+
+  return (
     <div className="flex-1 flex flex-col min-h-screen bg-[#090d13]">
       {/* Classification Top Bar */}
       <ClassificationBar level={scenario.classification} />
 
       {/* Military Grade Header with Joint Theme & Scenario Setup Modal Trigger */}
-      <Header 
-        scenario={scenario} 
-        onOpenScenarioModal={() => setIsScenarioModalOpen(true)} 
+      <Header
+        scenario={scenario}
+        onOpenScenarioModal={() => setIsScenarioModalOpen(true)}
       />
 
       {/* Main Container */}
@@ -158,7 +166,7 @@ export default function HomePage() {
               Joint Planning Process (JPP) Execution Pipeline
             </h2>
             <div className="flex items-center gap-3">
-              <button 
+              <button
                 onClick={() => setIsScenarioModalOpen(true)}
                 className="text-[11px] font-mono text-joint-300 hover:text-joint-200 flex items-center gap-1 underline underline-offset-2"
               >
@@ -218,59 +226,22 @@ export default function HomePage() {
           {/* Left 3 Cols: Active Phase Interactive Module */}
           <div className="lg:col-span-3 flex flex-col">
             {selectedPhase === 1 ? (
-              <PlanningInitiation
-                scenario={scenario}
-                state={planningInitState}
-                onStateChange={setPlanningInitState}
-                onOpenExportModal={() => setIsExportModalOpen(true)}
-              />
+              <PlanningInitiation onOpenExportModal={openExportModal} />
             ) : selectedPhase === 2 ? (
-              <MissionAnalysis
-                scenario={scenario}
-                state={missionAnalysisState}
-                onStateChange={setMissionAnalysisState}
-                onOpenExportModal={() => setIsExportModalOpen(true)}
-              />
+              <MissionAnalysis onOpenExportModal={openExportModal} />
             ) : selectedPhase === 3 ? (
-              <CoaDevelopment
-                scenario={scenario}
-                state={coaDevelopmentState}
-                onStateChange={setCoaDevelopmentState}
-                onOpenExportModal={() => setIsExportModalOpen(true)}
-              />
+              <CoaDevelopment onOpenExportModal={openExportModal} />
             ) : selectedPhase === 4 ? (
-              <CoaAnalysis
-                scenario={scenario}
-                state={coaAnalysisState}
-                onStateChange={setCoaAnalysisState}
-                coaDevState={coaDevelopmentState}
-                onOpenExportModal={() => setIsExportModalOpen(true)}
-              />
+              <CoaAnalysis onOpenExportModal={openExportModal} />
             ) : selectedPhase === 5 ? (
-              <CoaComparison
-                scenario={scenario}
-                state={coaComparisonState}
-                onStateChange={setCoaComparisonState}
-                coaDevState={coaDevelopmentState}
-                coaAnalysisState={coaAnalysisState}
-                onOpenExportModal={() => setIsExportModalOpen(true)}
-              />
+              <CoaComparison onOpenExportModal={openExportModal} />
             ) : selectedPhase === 6 ? (
-              <CoaApproval
-                scenario={scenario}
-                state={coaApprovalState}
-                onStateChange={setCoaApprovalState}
-                missionAnalysisState={missionAnalysisState}
-                coaDevState={coaDevelopmentState}
-                coaAnalysisState={coaAnalysisState}
-                coaComparisonState={coaComparisonState}
-                onOpenExportModal={() => setIsExportModalOpen(true)}
-              />
+              <CoaApproval onOpenExportModal={openExportModal} />
             ) : (
-              <PhaseWizard 
-                phaseId={selectedPhase} 
-                scenario={scenario} 
-                onOpenExportModal={() => setIsExportModalOpen(true)}
+              <PhaseWizard
+                phaseId={selectedPhase}
+                scenario={scenario}
+                onOpenExportModal={openExportModal}
               />
             )}
           </div>

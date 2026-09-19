@@ -39,6 +39,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { OperationalScenario } from '@/types/scenario';
+import { usePlanning } from '@/context/PlanningContext';
 import {
   CoaAnalysisState,
   CoaDevelopmentState,
@@ -112,11 +113,6 @@ export function createDefaultCoaAnalysisState(
 // =============================================================================
 
 interface CoaAnalysisProps {
-  scenario: OperationalScenario;
-  state: CoaAnalysisState;
-  onStateChange: (state: CoaAnalysisState) => void;
-  /** Step 3 output feeds Step 3 → Step 4 (JP 5-0, Figure IV-12 key inputs) */
-  coaDevState: CoaDevelopmentState;
   onOpenExportModal: () => void;
 }
 
@@ -1840,12 +1836,15 @@ const OutputsTab: React.FC<{
 // =============================================================================
 
 export const CoaAnalysis: React.FC<CoaAnalysisProps> = ({
-  scenario,
-  state,
-  onStateChange,
-  coaDevState,
   onOpenExportModal,
 }) => {
+  const {
+    scenario,
+    coaAnalysis: state,
+    setCoaAnalysis: onStateChange,
+    // Step 3 output feeds Step 4 (JP 5-0, Figure IV-12 key inputs)
+    coaDevelopment: coaDevState,
+  } = usePlanning();
   const [activeTab, setActiveTab] = useState<TabId>('prepare');
   const [generating, setGenerating] = useState(false);
   const [activeCoaId, setActiveCoaId] = useState<string>(coaDevState.coas[0]?.id || '');

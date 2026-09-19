@@ -25,6 +25,7 @@ import {
   Check,
 } from 'lucide-react';
 import { OperationalScenario } from '@/types/scenario';
+import { usePlanning } from '@/context/PlanningContext';
 import {
   PlanningInitiationState,
   PlanningTrigger,
@@ -114,9 +115,6 @@ export function createDefaultPlanningInitState(
 // =============================================================================
 
 interface PlanningInitiationProps {
-  scenario: OperationalScenario;
-  state: PlanningInitiationState;
-  onStateChange: (state: PlanningInitiationState) => void;
   onOpenExportModal: () => void;
 }
 
@@ -1102,11 +1100,9 @@ const StaffActionsTab: React.FC<{
 // =============================================================================
 
 export const PlanningInitiation: React.FC<PlanningInitiationProps> = ({
-  scenario,
-  state,
-  onStateChange,
   onOpenExportModal,
 }) => {
+  const { scenario, planningInit: state, setPlanningInit: onStateChange } = usePlanning();
   const [activeTab, setActiveTab] = useState<TabId>('trigger');
   const [generating, setGenerating] = useState(false);
 

@@ -27,6 +27,7 @@ import {
   FileCheck,
 } from 'lucide-react';
 import { OperationalScenario } from '@/types/scenario';
+import { usePlanning } from '@/context/PlanningContext';
 import {
   MissionAnalysisState,
   MissionTask,
@@ -107,9 +108,6 @@ export function createDefaultMissionAnalysisState(
 // =============================================================================
 
 interface MissionAnalysisProps {
-  scenario: OperationalScenario;
-  state: MissionAnalysisState;
-  onStateChange: (state: MissionAnalysisState) => void;
   onOpenExportModal: () => void;
 }
 
@@ -610,11 +608,9 @@ const JipoeEstimatesTab: React.FC<{
 // =============================================================================
 
 export const MissionAnalysis: React.FC<MissionAnalysisProps> = ({
-  scenario,
-  state,
-  onStateChange,
   onOpenExportModal,
 }) => {
+  const { scenario, missionAnalysis: state, setMissionAnalysis: onStateChange } = usePlanning();
   const [activeTab, setActiveTab] = useState<TabId>('tasks');
   const [generating, setGenerating] = useState(false);
 
