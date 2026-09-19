@@ -9,10 +9,11 @@ import { PlanningInitiation, createDefaultPlanningInitState } from '@/components
 import { MissionAnalysis, createDefaultMissionAnalysisState } from '@/components/steps/MissionAnalysis';
 import { CoaDevelopment, createDefaultCoaDevelopmentState } from '@/components/steps/CoaDevelopment';
 import { CoaAnalysis, createDefaultCoaAnalysisState } from '@/components/steps/CoaAnalysis';
+import { CoaComparison, createDefaultCoaComparisonState } from '@/components/steps/CoaComparison';
 import { ScenarioSetupModal } from '@/components/ScenarioSetupModal';
 import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
-import { PlanningInitiationState, MissionAnalysisState, CoaDevelopmentState, CoaAnalysisState } from '@/types/planning';
+import { PlanningInitiationState, MissionAnalysisState, CoaDevelopmentState, CoaAnalysisState, CoaComparisonState } from '@/types/planning';
 import { LoginScreen } from '@/components/LoginScreen';
 import { authService } from '@/lib/authService';
 import { 
@@ -101,6 +102,11 @@ export default function HomePage() {
   // Step 4: COA Analysis & Wargaming State
   const [coaAnalysisState, setCoaAnalysisState] = useState<CoaAnalysisState>(
     () => createDefaultCoaAnalysisState(scenario)
+  );
+
+  // Step 5: COA Comparison State
+  const [coaComparisonState, setCoaComparisonState] = useState<CoaComparisonState>(
+    () => createDefaultCoaComparisonState(scenario, missionAnalysisState)
   );
 
   const phaseIcons = [
@@ -232,6 +238,15 @@ export default function HomePage() {
                 state={coaAnalysisState}
                 onStateChange={setCoaAnalysisState}
                 coaDevState={coaDevelopmentState}
+                onOpenExportModal={() => setIsExportModalOpen(true)}
+              />
+            ) : selectedPhase === 5 ? (
+              <CoaComparison
+                scenario={scenario}
+                state={coaComparisonState}
+                onStateChange={setCoaComparisonState}
+                coaDevState={coaDevelopmentState}
+                coaAnalysisState={coaAnalysisState}
                 onOpenExportModal={() => setIsExportModalOpen(true)}
               />
             ) : (

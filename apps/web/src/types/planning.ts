@@ -589,3 +589,80 @@ export interface CoaAnalysisState {
   assessmentPlan: string;
   notes: string;
 }
+
+// =============================================================================
+// Step 5: COA Comparison — Type Definitions
+// JP 5-0, Chapter IV, para 4.f and Appendix E
+// =============================================================================
+
+/** Comparison technique (JP 5-0, Appendix E) */
+export type ComparisonTechnique =
+  | 'weighted'
+  | 'non_weighted'
+  | 'descriptive'
+  | 'plus_minus_neutral';
+
+/** Plus/minus/neutral rating (JP 5-0, Figure E-5) */
+export type PlusMinusNeutral = 'plus' | 'neutral' | 'minus' | 'unrated';
+
+/**
+ * An evaluation criterion as used for comparison. Extends the Step 2
+ * CoaEvalCriterion shape with the precise `standard` doctrine requires to be
+ * established before comparison begins (JP 5-0, IV-53).
+ */
+export interface ComparisonCriterion {
+  id: string;
+  name: string;
+  description: string;
+  /** Precise definition of how this criterion is judged, set before scoring. */
+  standard: string;
+  weight: number;
+  source: string;
+  active: boolean;
+}
+
+/** One COA's score against one criterion */
+export interface CriterionScore {
+  id: string;
+  criterionId: string;
+  coaId: string;
+  /** Numerical rating — higher is better (JP 5-0, Appendix E §2(3)) */
+  score: number | null;
+  /** Plus/minus/neutral rating, used by that technique */
+  pmn: PlusMinusNeutral;
+  rationale: string;
+}
+
+/** Per-COA, per-criterion narrative comparison (JP 5-0, Figures E-3 and E-4) */
+export interface CoaCriterionNarrative {
+  id: string;
+  coaId: string;
+  criterionId: string;
+  strengths: string;
+  weaknesses: string;
+  advantages: string;
+  disadvantages: string;
+}
+
+/** The staff's recommendation to the commander */
+export interface ComparisonRecommendation {
+  recommendedCoaId: string;
+  rationale: string;
+  differences: string;
+  advantagesSummary: string;
+  riskSummary: string;
+  dissentingViews: string;
+  briefedDtg: string;
+}
+
+/** Top-level Step 5 state */
+export interface CoaComparisonState {
+  technique: ComparisonTechnique;
+  criteria: ComparisonCriterion[];
+  scores: CriterionScore[];
+  narratives: CoaCriterionNarrative[];
+  recommendation: ComparisonRecommendation;
+  definitionCompletion: Record<string, boolean>;
+  outputCompletion: Record<string, boolean>;
+  notes: string;
+}

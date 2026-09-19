@@ -635,3 +635,98 @@ export const BRANCH_SEQUEL_TYPES = [
   { key: 'branch', label: 'Branch', description: 'A contingency option built into the plan for changing the mission, disposition, orientation, or direction of movement.' },
   { key: 'sequel', label: 'Sequel', description: 'A subsequent operation based on the possible outcomes of the current operation — victory, defeat, or stalemate.' },
 ] as const;
+
+// =============================================================================
+// Step 5: COA Comparison — Doctrinal Constants
+// JP 5-0, Chapter IV, para 4.f "COA Comparison (Step 5)" (pp. IV-51 to IV-53)
+// and Appendix E, "Course of Action Comparison" (pp. E-1 to E-5)
+// =============================================================================
+
+/** Key Inputs to COA Comparison (JP 5-0, Figure IV-14) */
+export const COA_COMPARISON_KEY_INPUTS = [
+  { id: 'cin-01', label: 'Evaluation criteria', source: 'Step 2 / refined here' },
+  { id: 'cin-02', label: 'Wargaming results', source: 'Step 4' },
+  { id: 'cin-03', label: 'Advantages and disadvantages', source: 'Step 4' },
+  { id: 'cin-04', label: 'Revised staff estimates', source: 'All Directorates' },
+  { id: 'cin-05', label: 'Network analysis', source: 'J-2' },
+] as const;
+
+/** Key Outputs of COA Comparison (JP 5-0, Figure IV-14) */
+export const COA_COMPARISON_KEY_OUTPUTS = [
+  { id: 'cout-01', label: 'Evaluated COAs' },
+  { id: 'cout-02', label: 'Recommended COA' },
+  { id: 'cout-03', label: 'COA selection rationale' },
+  { id: 'cout-04', label: 'Revised staff estimates' },
+  { id: 'cout-05', label: "Refined commander's critical information requirements" },
+  { id: 'cout-06', label: 'Updated synchronization matrices' },
+  { id: 'cout-07', label: 'Updated network engagement products' },
+] as const;
+
+/**
+ * COA comparison techniques (JP 5-0, Appendix E).
+ * These are aids to selection, not decision procedures — "Commanders apply
+ * logic, reason, their knowledge of the mission and the OE, and operational art
+ * to determine the best COA for the mission."
+ */
+export const COA_COMPARISON_TECHNIQUES = [
+  {
+    key: 'weighted',
+    label: 'Weighted Numerical Comparison',
+    ref: 'Appendix E, §2',
+    description:
+      'The most common technique. Each criterion carries a weight reflecting its relative preference; score × weight yields the value for that criterion, and values are totalled per COA.',
+    caveat:
+      'Use numerical methods with caution given the inherently subjective values and weighting assigned. Do not portray the total as the result of rigorous mathematical analysis.',
+  },
+  {
+    key: 'non_weighted',
+    label: 'Non-Weighted Numerical Comparison',
+    ref: 'Appendix E, §3',
+    description:
+      'The same as the weighted technique but without weights — raw numerical values are added for each COA. The highest number is best for each criterion.',
+    caveat: 'Treats every criterion as equally important, which is rarely true of a real operation.',
+  },
+  {
+    key: 'descriptive',
+    label: 'Narrative / Bulletized Descriptive Comparison',
+    ref: 'Appendix E, §4',
+    description:
+      'Summarize the comparison of all COAs by analyzing strengths and weaknesses, or advantages and disadvantages, for each criterion.',
+    caveat: 'Carries no false precision, but makes differentiating closely matched COAs harder.',
+  },
+  {
+    key: 'plus_minus_neutral',
+    label: 'Plus / Minus / Neutral Comparison',
+    ref: 'Appendix E, §5',
+    description:
+      'Based on the broad degree to which each criterion is supported or reflected in the COA: (+) positive influence, (0) neutral, (−) negative.',
+    caveat: 'Coarse by design — good for a fast read, weak for close calls.',
+  },
+] as const;
+
+/** Plus/minus/neutral values (JP 5-0, Figure E-5) */
+export const PLUS_MINUS_NEUTRAL_VALUES = [
+  { key: 'plus', symbol: '+', label: 'Positive influence', color: 'emerald' },
+  { key: 'neutral', symbol: '0', label: 'Neutral influence', color: 'slate' },
+  { key: 'minus', symbol: '−', label: 'Negative influence', color: 'red' },
+] as const;
+
+/** Questions COA comparison helps the commander answer (JP 5-0, IV-51) */
+export const COMPARISON_COMMANDER_QUESTIONS = [
+  { id: 'ccq-01', question: 'What are the differences between each COA?' },
+  { id: 'ccq-02', question: 'What are the advantages and disadvantages?' },
+  { id: 'ccq-03', question: 'What are the risks?' },
+] as const;
+
+/**
+ * Preparing for COA comparison — defining criteria and their standards.
+ * JP 5-0, IV-53, para (d)1–2.
+ */
+export const CRITERIA_DEFINITION_STEPS = [
+  { id: 'cds-01', label: "Review commander's guidance for relevant criteria", phase: 'identify' },
+  { id: 'cds-02', label: 'Identify implicit significant factors relating to the operation', phase: 'identify' },
+  { id: 'cds-03', label: 'Identify criteria relating to that staff function', phase: 'identify' },
+  { id: 'cds-04', label: 'Establish standard definitions for each evaluation criterion', phase: 'define' },
+  { id: 'cds-05', label: 'Establish definitions before commencing comparison, to avoid compromising the outcome', phase: 'define' },
+  { id: 'cds-06', label: 'Apply the standard for each criterion to each COA', phase: 'define' },
+] as const;
