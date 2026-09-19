@@ -331,7 +331,6 @@ function PlanningWorkspace() {
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         activePhaseId={selectedPhase}
-        scenario={scenario}
       />
     </div>
   );
