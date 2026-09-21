@@ -129,6 +129,24 @@ export const AssistantSettingsModal: React.FC<AssistantSettingsModalProps> = ({
             </p>
           </div>
 
+          <div>
+            <label className="block text-[11px] font-mono text-slate-400 mb-1.5">
+              Vision model
+              <span className="text-slate-600 ml-1.5">for scanned documents and images</span>
+            </label>
+            <input
+              type="text"
+              value={config.visionModel}
+              onChange={(e) => setConfig({ ...config, visionModel: e.target.value })}
+              placeholder="qwen3-vl:8b"
+              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 font-mono focus:outline-none focus:border-joint-500"
+            />
+            <p className="text-[10px] text-slate-500 mt-1.5 leading-relaxed">
+              Used only when a document has no text layer. Leave blank to disable transcription —
+              scanned files will then report that they need a vision model rather than failing.
+            </p>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-mono text-slate-400 mb-1.5">

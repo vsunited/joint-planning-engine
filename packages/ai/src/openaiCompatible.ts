@@ -94,6 +94,116 @@ export class OpenAiCompatibleAssistant implements IPlanningAssistant {
     }
   }
 
+  /**
+   * One vision completion. Images are sent as a content array.
+   *
+   * Ollama expects `image_url` as a bare data-URI string, while the OpenAI
+   * spec uses `{ url }`. Emitting both keeps this portable across Ollama,
+   * llama.cpp and vLLM without sniffing which server is on the other end.
+   */
+  private async completeVision(system: string, prompt: string, images: string[]): Promise<string> {
+    if (!this.config.visionModel) {
+      throw new AssistantError(
+        'No vision model is configured. Set one in assistant settings to read scanned documents.'
+      );
+    }
+
+    /*
+     * Ollama takes `image_url` as a bare data-URI string; the OpenAI spec uses
+     * `{ url }`. Try the string form, then fall back to the object form if the
+     * server gives nothing back — sending both at once duplicates the image in
+     * the prompt and makes the model return an empty transcription.
+     */
+    const buildContent = (asObject: boolean): unknown[] => [
+      { type: 'text', text: prompt },
+      ...images.map(src => ({
+        type: 'image_url',
+        image_url: asObject ? { url: src } : src,
+      })),
+    ];
+
+    const text = await this.visionRequest(system, buildContent(false));
+    if (text.trim()) return text;
+    return this.visionRequest(system, buildContent(true));
+  }
+
+  /** One vision request with a prepared content array. */
+  private async visionRequest(system: string, content: unknown[]): Promise<string> {
+    let res: Response;
+    try {
+      res = await this.fetchWithTimeout(
+        `${this.base()}/chat/completions`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: this.config.visionModel,
+            temperature: 0,
+            messages: [
+              { role: 'system', content: system },
+              { role: 'user', content },
+            ],
+          }),
+        },
+        this.config.timeoutMs
+      );
+    } catch (err) {
+      if ((err as Error)?.name === 'AbortError') {
+        throw new AssistantError(
+          'The vision model did not respond in time. Transcribing pages is slow — try fewer ' +
+            'pages, or a smaller vision model.'
+        );
+      }
+      throw new AssistantError('Could not reach the inference endpoint.', err);
+    }
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      if (res.status === 404) {
+        throw new AssistantError(
+          `The vision model "${this.config.visionModel}" is not available on the endpoint. ` +
+            'Pull it first, or set a different model in assistant settings.'
+        );
+      }
+      throw new AssistantError(
+        `The inference endpoint returned HTTP ${res.status}. ${detail.slice(0, 200)}`.trim()
+      );
+    }
+
+    const body = await res.json();
+    return body?.choices?.[0]?.message?.content ?? '';
+  }
+
+  async transcribeImages(images: string[], ctx: AssistantContext): Promise<string> {
+    if (!images.length) throw new AssistantError('No page images were supplied.');
+
+    const system =
+      'You transcribe scanned military planning documents. Reproduce the text you can see, ' +
+      'preserving paragraph numbering and headings. Do not summarise, interpret, or add ' +
+      'commentary. If part of the page is illegible, write [illegible] rather than guessing. ' +
+      'Output the transcription only.';
+
+    const pages: string[] = [];
+    for (let i = 0; i < images.length; i++) {
+      const prompt =
+        images.length > 1
+          ? `Transcribe page ${i + 1} of ${images.length} of this document.`
+          : 'Transcribe the text in this document.';
+      const text = (await this.completeVision(system, prompt, [images[i]])).trim();
+      if (text) {
+        pages.push(images.length > 1 ? `--- Page ${i + 1} ---\n${text}` : text);
+      }
+    }
+
+    const joined = pages.join('\n\n').trim();
+    if (!joined) {
+      throw new AssistantError(
+        'The vision model returned no text. The scan may be too low quality to read.'
+      );
+    }
+    return joined;
+  }
+
   /** One chat completion returning raw assistant text. */
   private async complete(system: string, user: string): Promise<string> {
     if (!this.config.model) {

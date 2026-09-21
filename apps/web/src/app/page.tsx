@@ -15,6 +15,7 @@ import { PlanOrderDevelopment, createDefaultPlanOrderDevelopmentState } from '@/
 import { ScenarioSetupModal } from '@/components/ScenarioSetupModal';
 import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
+import { statusLabel } from '@/lib/ingest';
 import { PlanningProvider, PlanningState, usePlanning } from '@/context/PlanningContext';
 import { LoginScreen } from '@/components/LoginScreen';
 import { authService } from '@/lib/authService';
@@ -41,20 +42,12 @@ const DEFAULT_SCENARIO: OperationalScenario = {
   higherHq: 'USAFRICOM',
   aorRegion: 'Bab-el-Mandeb & Western Indian Ocean',
   classification: 'UNCLASSIFIED',
-  uploadedDocuments: [
-    {
-      name: 'USAFRICOM_PLANORD_26-04.pdf',
-      size: '4.20 MB',
-      type: 'application/pdf',
-      uploadedAt: '08:45',
-    },
-    {
-      name: 'JIPOE_Red_Sea_Maritime_Threat_Estimate.pdf',
-      size: '12.80 MB',
-      type: 'application/pdf',
-      uploadedAt: '09:12',
-    },
-  ],
+  /*
+   * No seeded documents. The status badge now reflects real ingestion, so
+   * pre-loading entries that claim to be parsed without any extracted text
+   * would be the same fiction this feature exists to remove.
+   */
+  uploadedDocuments: [],
 };
 
 /**
@@ -296,8 +289,16 @@ function PlanningWorkspace() {
                       <div className="truncate text-slate-300 text-[11px] max-w-[160px]">
                         {doc.name}
                       </div>
-                      <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/60 px-1 py-0.5 rounded border border-emerald-900/60">
-                        PARSED
+                      <span
+                        className={`text-[9px] font-mono px-1 py-0.5 rounded border ${
+                          doc.status === 'parsed' || doc.status === 'vision_parsed'
+                            ? 'text-emerald-400 bg-emerald-950/60 border-emerald-900/60'
+                            : doc.status === 'needs_vision'
+                            ? 'text-amber-400 bg-amber-950/60 border-amber-900/60'
+                            : 'text-red-400 bg-red-950/60 border-red-900/60'
+                        }`}
+                      >
+                        {statusLabel(doc.status)}
                       </span>
                     </div>
                   ))}

@@ -96,6 +96,11 @@ export interface AssistantConfig {
   /** OpenAI-compatible base URL, e.g. http://localhost:11434/v1 */
   baseUrl: string;
   model: string;
+  /**
+   * Vision-capable model, used to transcribe scanned documents and images.
+   * Separate from `model` because text and vision are rarely the same weights.
+   */
+  visionModel: string;
   temperature: number;
   /** Milliseconds before a request is abandoned. Local models can be slow. */
   timeoutMs: number;
@@ -104,6 +109,7 @@ export interface AssistantConfig {
 export const DEFAULT_ASSISTANT_CONFIG: AssistantConfig = {
   baseUrl: 'http://localhost:11434/v1',
   model: 'llama3.1:8b',
+  visionModel: 'qwen3-vl:8b',
   temperature: 0.2,
   /*
    * Generous by default. An 8B model on Apple silicon runs roughly 30-43s for a
@@ -132,6 +138,8 @@ export interface IPlanningAssistant {
   getConfig(): AssistantConfig;
   checkAvailability(): Promise<AvailabilityResult>;
   extractTasks(orderText: string, ctx: AssistantContext): Promise<ExtractedTask[]>;
+  /** Transcribes page images from a scanned document into text. */
+  transcribeImages(images: string[], ctx: AssistantContext): Promise<string>;
   draftCoa(guidance: string, ctx: AssistantContext): Promise<DraftedCoa>;
   critiqueCoa(coaText: string, ctx: AssistantContext): Promise<CoaCritique>;
 }

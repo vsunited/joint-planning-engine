@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Cpu, Loader2, Check, AlertTriangle, Upload, Settings2 } from 'lucide-react';
+import { X, Cpu, Loader2, Check, AlertTriangle, Upload, Settings2, FileText } from 'lucide-react';
 import { AssistantError, ExtractedTask } from '@jpe/ai';
 import { assistant } from '@/lib/assistant';
 import { usePlanning } from '@/context/PlanningContext';
 import { MissionTask } from '@/types/planning';
+import { ingestFile, statusLabel, acceptAttribute } from '@/lib/ingest';
 
 interface AiTaskExtractionPanelProps {
   isOpen: boolean;
@@ -32,29 +33,87 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
   const [error, setError] = useState('');
   const [results, setResults] = useState<ExtractedTask[] | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [ingestNote, setIngestNote] = useState('');
 
   if (!isOpen) return null;
 
+  /** Reads any supported format, falling back to vision for scans. */
   const readFile = async (file: File) => {
-    const text = await file.text();
-    setOrderText(text);
+    setIngestNote(`Reading ${file.name}…`);
+    setError('');
+    const doc = await ingestFile(file, p =>
+      setIngestNote(p.detail ? `${file.name} — ${p.detail}` : `Reading ${file.name}…`)
+    );
+
+    if (doc.status === 'parsed') {
+      setOrderText(doc.text);
+      setIngestNote(`${doc.name} — ${doc.charCount.toLocaleString()} characters extracted.`);
+      return;
+    }
+
+    if (doc.status === 'needs_vision' && doc.images?.length) {
+      setIngestNote(`${doc.name} — no text layer. Transcribing ${doc.images.length} page(s)…`);
+      try {
+        const text = await assistant.transcribeImages(doc.images, ctx());
+        setOrderText(text);
+        setIngestNote(`${doc.name} — transcribed, ${text.length.toLocaleString()} characters.`);
+      } catch (err) {
+        setIngestNote('');
+        setError(
+          err instanceof AssistantError ? err.message : 'The document could not be transcribed.'
+        );
+      }
+      return;
+    }
+
+    setIngestNote('');
+    setError(doc.detail || 'That file could not be read.');
   };
+
+  /** Pulls the text of a document already ingested in scenario setup. */
+  const useIngestedDoc = async (index: number) => {
+    const doc = scenario.uploadedDocuments[index];
+    if (!doc) return;
+    setError('');
+    if (doc.text) {
+      setOrderText(doc.text);
+      setIngestNote(`${doc.name} — ${doc.charCount.toLocaleString()} characters.`);
+      return;
+    }
+    if (doc.images?.length) {
+      setIngestNote(`${doc.name} — transcribing ${doc.images.length} page(s)…`);
+      try {
+        const text = await assistant.transcribeImages(doc.images, ctx());
+        setOrderText(text);
+        setIngestNote(`${doc.name} — transcribed, ${text.length.toLocaleString()} characters.`);
+      } catch (err) {
+        setIngestNote('');
+        setError(
+          err instanceof AssistantError ? err.message : 'The document could not be transcribed.'
+        );
+      }
+      return;
+    }
+    setError(doc.detail || 'That document has no readable text.');
+  };
+
+  const ctx = () => ({
+    jtfName: scenario.jtfName,
+    operationName: scenario.operationName,
+    higherHq: scenario.higherHq,
+    aorRegion: scenario.aorRegion,
+    classification: scenario.classification,
+    missionStatement: missionAnalysis.restatedMission.fullStatement,
+    commandersIntent: missionAnalysis.commanderIntent,
+    enemyCog: missionAnalysis.jipoe.enemyCOG,
+  });
 
   const run = async () => {
     setRunning(true);
     setError('');
     setResults(null);
     try {
-      const tasks = await assistant.extractTasks(orderText, {
-        jtfName: scenario.jtfName,
-        operationName: scenario.operationName,
-        higherHq: scenario.higherHq,
-        aorRegion: scenario.aorRegion,
-        classification: scenario.classification,
-        missionStatement: missionAnalysis.restatedMission.fullStatement,
-        commandersIntent: missionAnalysis.commanderIntent,
-        enemyCog: missionAnalysis.jipoe.enemyCOG,
-      });
+      const tasks = await assistant.extractTasks(orderText, ctx());
       setResults(tasks);
       setSelected(new Set(tasks.map((_, i) => i)));
     } catch (err) {
@@ -127,17 +186,52 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {!results && (
             <>
+              {scenario.uploadedDocuments.length > 0 && (
+                <div>
+                  <label className="block text-[11px] font-mono text-slate-400 mb-1.5">
+                    Use a document already ingested in scenario setup
+                  </label>
+                  <div className="space-y-1.5">
+                    {scenario.uploadedDocuments.map((doc, i) => {
+                      const usable = !!doc.text || !!doc.images?.length;
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => useIngestedDoc(i)}
+                          disabled={!usable}
+                          className={`w-full text-left p-2.5 rounded-lg border transition flex items-center gap-2.5 ${
+                            usable
+                              ? 'bg-slate-950/60 border-slate-800 hover:border-joint-700'
+                              : 'bg-slate-950/30 border-slate-850 opacity-50 cursor-not-allowed'
+                          }`}
+                        >
+                          <FileText className="w-3.5 h-3.5 text-joint-400 shrink-0" />
+                          <span className="text-[11px] text-slate-200 truncate flex-1">
+                            {doc.name}
+                          </span>
+                          <span className="text-[9px] font-mono text-slate-500 shrink-0">
+                            {doc.charCount
+                              ? `${doc.charCount.toLocaleString()} chars`
+                              : statusLabel(doc.status)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-[11px] font-mono text-slate-400">
-                    Order text — paste, or load a .txt / .md file
+                    Order text — paste, load a file, or use an ingested document
                   </label>
                   <label className="text-[10px] font-mono text-joint-300 hover:text-joint-200 cursor-pointer flex items-center gap-1.5">
                     <Upload className="w-3 h-3" />
                     Load file
                     <input
                       type="file"
-                      accept=".txt,.md,text/plain,text/markdown"
+                      accept={acceptAttribute()}
                       className="hidden"
                       onChange={(e) => {
                         const f = e.target.files?.[0];
@@ -157,6 +251,14 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
                   {orderText.length.toLocaleString()} characters. Processed locally — this text does
                   not leave your network.
                 </p>
+                {ingestNote && (
+                  <p className="text-[10px] font-mono text-joint-300 mt-1.5 flex items-center gap-1.5">
+                    <Loader2
+                      className={`w-3 h-3 ${/…$/.test(ingestNote) ? 'animate-spin' : 'hidden'}`}
+                    />
+                    {ingestNote}
+                  </p>
+                )}
               </div>
 
               {error && (
