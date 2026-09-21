@@ -18,7 +18,7 @@ import {
   STAFF_DIRECTORATES,
 } from '@jpe/shared';
 import {
-  Sparkles,
+  Cpu,
   Crosshair,
   Layers,
   GitBranch,
@@ -36,6 +36,9 @@ import {
 } from 'lucide-react';
 import { OperationalScenario } from '@/types/scenario';
 import { usePlanning } from '@/context/PlanningContext';
+import { AiCoaPanel } from '@/components/AiCoaPanel';
+import { AssistantSettingsModal } from '@/components/AssistantSettingsModal';
+import type { DraftedCoa, CoaCritique } from '@jpe/ai';
 import {
   CoaDevelopmentState,
   CourseOfAction,
@@ -1650,7 +1653,9 @@ export const CoaDevelopment: React.FC<CoaDevelopmentProps> = ({
 }) => {
   const { scenario, coaDevelopment: state, setCoaDevelopment: onStateChange } = usePlanning();
   const [activeTab, setActiveTab] = useState<TabId>('inputs');
-  const [generating, setGenerating] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiMode, setAiMode] = useState<'draft' | 'critique'>('draft');
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeCoaId, setActiveCoaId] = useState<string>(state.coas[0]?.id || '');
 
   // Keep the COA selection valid if COAs are added or removed.
@@ -1686,12 +1691,19 @@ export const CoaDevelopment: React.FC<CoaDevelopmentProps> = ({
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setGenerating(true); setTimeout(() => setGenerating(false), 900); }}
-              disabled={generating}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-2 transition shadow-md shadow-emerald-950/40 disabled:opacity-50"
+              onClick={() => { setAiMode('draft'); setAiOpen(true); }}
+              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1.5 transition shadow-md shadow-emerald-950/40"
             >
-              <Sparkles className={`w-3.5 h-3.5 ${generating ? 'animate-spin' : ''}`} />
-              <span>{generating ? 'Synthesizing...' : 'AI Staff Assistant'}</span>
+              <Cpu className="w-3.5 h-3.5" />
+              <span>Draft COA</span>
+            </button>
+            <button
+              onClick={() => { setAiMode('critique'); setAiOpen(true); }}
+              disabled={!state.coas.some(c => c.id === resolvedCoaId)}
+              className="px-3.5 py-2 bg-slate-900 hover:border-joint-600 border border-slate-700 text-slate-200 font-semibold text-xs rounded-lg flex items-center gap-1.5 transition disabled:opacity-40"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-joint-400" />
+              <span>Critique COA</span>
             </button>
             <button
               onClick={onOpenExportModal}
@@ -1748,6 +1760,51 @@ export const CoaDevelopment: React.FC<CoaDevelopmentProps> = ({
           })}
         </div>
       </div>
+
+      <AiCoaPanel
+        isOpen={aiOpen}
+        mode={aiMode}
+        coa={state.coas.find(c => c.id === resolvedCoaId)}
+        onClose={() => setAiOpen(false)}
+        onOpenSettings={() => { setAiOpen(false); setSettingsOpen(true); }}
+        onAcceptDraft={(d: DraftedCoa) => {
+          const next = createCoa(state.coas.length, scenario);
+          onStateChange({
+            ...state,
+            coas: [
+              ...state.coas,
+              {
+                ...next,
+                name: d.name || next.name,
+                narrative: d.narrative,
+                statement: { ...next.statement, ...d.statement },
+                conops: { ...next.conops, ...d.conops },
+                distinguishability: { ...next.distinguishability, ...d.distinguishability },
+              },
+            ],
+          });
+        }}
+        onAcceptCritique={(c: CoaCritique) => {
+          onStateChange({
+            ...state,
+            coas: state.coas.map(coa =>
+              coa.id === resolvedCoaId
+                ? {
+                    ...coa,
+                    validity: {
+                      suitable: { status: c.suitable.status, rationale: c.suitable.rationale },
+                      feasible: { status: c.feasible.status, rationale: c.feasible.rationale },
+                      acceptable: { status: c.acceptable.status, rationale: c.acceptable.rationale },
+                      distinguishable: { status: c.distinguishable.status, rationale: c.distinguishable.rationale },
+                      complete: { status: c.complete.status, rationale: c.complete.rationale },
+                    },
+                  }
+                : coa
+            ),
+          });
+        }}
+      />
+      <AssistantSettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       <div className="p-6 flex-1 flex flex-col overflow-y-auto">
         {activeTab === 'inputs' && (

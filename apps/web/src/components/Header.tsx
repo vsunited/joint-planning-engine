@@ -55,10 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950/60 border border-slate-800">
             <Sparkles className="w-3.5 h-3.5 text-joint-400 animate-pulse" />
             <div className="text-left">
-              <div className="text-[10px] font-mono font-semibold text-slate-300 flex items-center gap-1">
-                Vertex AI Synthesizer
-              </div>
-              <div className="text-[9px] text-joint-400 font-mono">JP 5-0 Grounded</div>
+              
             </div>
           </div>
 

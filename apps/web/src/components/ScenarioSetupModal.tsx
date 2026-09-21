@@ -8,10 +8,12 @@ import {
   Check, 
   Shield, 
   FolderPlus, 
-  Trash2, 
+  Trash2,
+  Loader2, 
   Info
 } from 'lucide-react';
-import { OperationalScenario } from '@/types/scenario';
+import { OperationalScenario, UploadedDocument } from '@/types/scenario';
+import { ingestFile, statusLabel, acceptAttribute, IngestedDocument } from '@/lib/ingest';
 
 interface ScenarioSetupModalProps {
   isOpen: boolean;
@@ -28,23 +30,40 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
 }) => {
   const [scenario, setScenario] = useState<OperationalScenario>({ ...currentScenario });
   const [dragOver, setDragOver] = useState(false);
+  const [ingesting, setIngesting] = useState<string>('');
 
   if (!isOpen) return null;
 
-  const handleSimulatedFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
-    const files = Array.from(e.target.files);
-    const newDocs = files.map(file => ({
-      name: file.name,
-      size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
-      type: file.type || 'application/pdf',
-      uploadedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    }));
+  /** Converts an ingest result into the scenario's document record. */
+  const toDocument = (doc: IngestedDocument): UploadedDocument => ({
+    name: doc.name,
+    size: `${(doc.size / (1024 * 1024)).toFixed(2)} MB`,
+    type: doc.mime,
+    uploadedAt: new Date(doc.ingestedAt).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+    text: doc.text,
+    charCount: doc.charCount,
+    status: doc.status,
+    pageCount: doc.pageCount,
+    detail: doc.detail,
+    images: doc.images,
+  });
 
-    setScenario(prev => ({
-      ...prev,
-      uploadedDocuments: [...prev.uploadedDocuments, ...newDocs],
-    }));
+  /** Reads each file for real and stores the extracted text. */
+  const handleFileUpload = async (files: File[]) => {
+    for (const file of files) {
+      setIngesting(file.name);
+      const result = await ingestFile(file, p =>
+        setIngesting(p.detail ? `${file.name} — ${p.detail}` : file.name)
+      );
+      setScenario(prev => ({
+        ...prev,
+        uploadedDocuments: [...prev.uploadedDocuments, toDocument(result)],
+      }));
+    }
+    setIngesting('');
   };
 
   const removeDoc = (index: number) => {
@@ -180,8 +199,8 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
                   onChange={e => setScenario({ ...scenario, classification: e.target.value as any })}
                   className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-joint-500 transition font-mono"
                 >
-                  <option value="UNCLASSIFIED">UNCLASSIFIED // FOUO</option>
-                  <option value="CUI">CUI // REL TO USA, FVEY</option>
+                  <option value="UNCLASSIFIED">UNCLASSIFIED</option>
+                  <option value="CUI">CUI</option>
                 </select>
               </div>
             </div>
@@ -206,17 +225,7 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
                 e.preventDefault();
                 setDragOver(false);
                 if (e.dataTransfer.files?.length) {
-                  const files = Array.from(e.dataTransfer.files);
-                  const newDocs = files.map(file => ({
-                    name: file.name,
-                    size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
-                    type: file.type || 'application/pdf',
-                    uploadedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                  }));
-                  setScenario(prev => ({
-                    ...prev,
-                    uploadedDocuments: [...prev.uploadedDocuments, ...newDocs],
-                  }));
+                  handleFileUpload(Array.from(e.dataTransfer.files));
                 }
               }}
               className={`border-2 border-dashed rounded-xl p-6 text-center transition flex flex-col items-center justify-center cursor-pointer ${
@@ -230,8 +239,8 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
                 multiple
                 id="docUpload"
                 className="hidden"
-                onChange={handleSimulatedFileUpload}
-                accept=".pdf,.docx,.txt"
+                onChange={e => e.target.files && handleFileUpload(Array.from(e.target.files))}
+                accept={acceptAttribute()}
               />
               <label htmlFor="docUpload" className="cursor-pointer flex flex-col items-center">
                 <div className="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-joint-300 mb-2">
@@ -241,10 +250,17 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
                   Click to browse or drag & drop Higher HQ Directives
                 </div>
                 <div className="text-[11px] text-slate-400 mt-0.5 font-mono">
-                  CCMD WARNORDs, Annexes, Strat Guidance (PDF, DOCX up to 50MB)
+                  PDF, Word, PowerPoint, images or plain text — read on this machine
                 </div>
               </label>
             </div>
+
+            {ingesting && (
+              <div className="mt-3 p-2.5 rounded-lg bg-joint-950/30 border border-joint-800 flex items-center gap-2">
+                <Loader2 className="w-3.5 h-3.5 text-joint-300 animate-spin shrink-0" />
+                <span className="text-[11px] text-joint-200 font-mono truncate">{ingesting}</span>
+              </div>
+            )}
 
             {/* Document List */}
             {scenario.uploadedDocuments.length > 0 && (
@@ -262,17 +278,38 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
                       <div>
                         <div className="font-medium text-slate-200">{doc.name}</div>
                         <div className="text-[10px] text-slate-500 font-mono">
-                          {doc.size} • Ingested at {doc.uploadedAt}
+                          {doc.size}
+                          {doc.pageCount ? ` • ${doc.pageCount} pages` : ''}
+                          {doc.charCount ? ` • ${doc.charCount.toLocaleString()} chars` : ''}
+                          {' • '}{doc.uploadedAt}
                         </div>
+                        {doc.detail && (
+                          <div className="text-[10px] text-slate-500 mt-1 max-w-sm leading-snug">
+                            {doc.detail}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => removeDoc(idx)}
-                      className="text-slate-500 hover:text-red-400 p-1 transition"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span
+                        className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${
+                          doc.status === 'parsed' || doc.status === 'vision_parsed'
+                            ? 'text-emerald-400 bg-emerald-950/60 border-emerald-900/60'
+                            : doc.status === 'needs_vision'
+                            ? 'text-amber-400 bg-amber-950/60 border-amber-900/60'
+                            : 'text-red-400 bg-red-950/60 border-red-900/60'
+                        }`}
+                      >
+                        {statusLabel(doc.status)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeDoc(idx)}
+                        className="text-slate-500 hover:text-red-400 p-1 transition"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -281,7 +318,12 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
             <div className="bg-joint-950/40 border border-joint-900/60 rounded-lg p-3 text-[11px] text-slate-300 flex items-start gap-2">
               <Info className="w-4 h-4 text-joint-400 shrink-0 mt-0.5" />
               <div>
-                <strong>Automated JPP Ingestion:</strong> Ingested directives are parsed by the AI Co-Planner to extract specified, implied, and essential tasks, Commander's Critical Information Requirements (CCIRs), and timeline constraints directly into Phase 1 & 2 worksheets.
+                <strong>What happens to an uploaded order:</strong> text is extracted here
+                and on upload — from PDF, Word, PowerPoint and plain text, with scans
+                transcribed by a local vision model if one is configured. Step 2 can then run
+                task extraction against that text. Results are staged for review; the planner
+                accepts, edits or discards them, and nothing is written into a worksheet
+                without that decision.
               </div>
             </div>
           </div>

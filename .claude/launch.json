@@ -4,8 +4,20 @@
     {
       "name": "web",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@jpe/web", "dev"],
+      "runtimeArgs": [
+        "--filter",
+        "@jpe/web",
+        "dev"
+      ],
       "port": 3000
+    },
+    {
+      "name": "web-static",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "scripts/serve-static.js"
+      ],
+      "port": 4000
     }
   ]
 }

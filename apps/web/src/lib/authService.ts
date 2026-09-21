@@ -11,6 +11,18 @@ import { IAuthService, AuthSession, UserProfile, UserRole } from '@jpe/shared';
 
 const AUTHORIZED_EMAILS = ['neoderek2005@gmail.com'];
 
+/**
+ * The single source of truth for who may use this build.
+ *
+ * The route guard previously repeated one of these addresses as an inline
+ * string literal, so adding a second planner here would have let them sign in
+ * and then bounced them at the door. Both the sign-in path and every route
+ * guard now ask this function.
+ */
+export function isAuthorizedEmail(email: string | null | undefined): boolean {
+  return !!email && AUTHORIZED_EMAILS.includes(email);
+}
+
 class AuthService implements IAuthService {
   private currentSession: AuthSession | null = null;
 
@@ -24,7 +36,7 @@ class AuthService implements IAuthService {
     const fbUser = result.user;
     
     // Strict Whitelist Check
-    if (!fbUser.email || !AUTHORIZED_EMAILS.includes(fbUser.email)) {
+    if (!isAuthorizedEmail(fbUser.email)) {
       await fbSignOut(auth);
       throw new Error("Unauthorized account. Only approved command staff can access the Joint Planning Engine.");
     }

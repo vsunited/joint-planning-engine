@@ -20,7 +20,6 @@ import {
   STAFF_DIRECTORATES,
 } from '@jpe/shared';
 import {
-  Sparkles,
   Layers,
   Swords,
   Grid3x3,
@@ -1846,7 +1845,6 @@ export const CoaAnalysis: React.FC<CoaAnalysisProps> = ({
     coaDevelopment: coaDevState,
   } = usePlanning();
   const [activeTab, setActiveTab] = useState<TabId>('prepare');
-  const [generating, setGenerating] = useState(false);
   const [activeCoaId, setActiveCoaId] = useState<string>(coaDevState.coas[0]?.id || '');
 
   const resolvedCoaId = useMemo(() => {
@@ -1894,17 +1892,6 @@ export const CoaAnalysis: React.FC<CoaAnalysisProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setGenerating(true);
-                setTimeout(() => setGenerating(false), 900);
-              }}
-              disabled={generating}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-2 transition shadow-md shadow-emerald-950/40 disabled:opacity-50"
-            >
-              <Sparkles className={`w-3.5 h-3.5 ${generating ? 'animate-spin' : ''}`} />
-              <span>{generating ? 'Synthesizing...' : 'AI Staff Assistant'}</span>
-            </button>
             <button
               onClick={onOpenExportModal}
               className="px-3.5 py-2 bg-joint-950/90 hover:bg-joint-900 text-joint-200 text-xs font-semibold rounded-lg border border-joint-700/80 transition flex items-center gap-1.5"

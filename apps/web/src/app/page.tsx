@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { JPP_PHASES, JOINT_FUNCTIONS } from '@jpe/shared';
 import { Header } from '@/components/Header';
 import { ClassificationBar } from '@/components/ClassificationBar';
-import { PhaseWizard } from '@/components/PhaseWizard';
 import { PlanningInitiation, createDefaultPlanningInitState } from '@/components/steps/PlanningInitiation';
 import { MissionAnalysis, createDefaultMissionAnalysisState } from '@/components/steps/MissionAnalysis';
 import { CoaDevelopment, createDefaultCoaDevelopmentState } from '@/components/steps/CoaDevelopment';
@@ -15,9 +14,14 @@ import { PlanOrderDevelopment, createDefaultPlanOrderDevelopmentState } from '@/
 import { ScenarioSetupModal } from '@/components/ScenarioSetupModal';
 import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
+import { statusLabel } from '@/lib/ingest';
 import { PlanningProvider, PlanningState, usePlanning } from '@/context/PlanningContext';
-import { LoginScreen } from '@/components/LoginScreen';
-import { authService } from '@/lib/authService';
+import { AuthGate } from '@/components/AuthGate';
+import { TrialProvider, useTrial } from '@/context/TrialContext';
+import { TrialBar } from '@/components/TrialBar';
+import { TrialSetupModal } from '@/components/TrialSetupModal';
+import { emit } from '@/lib/telemetry/probe';
+import { TRIAL_PACKETS } from '@/lib/telemetry/packets';
 import {
   Shield,
   Layers,
@@ -41,20 +45,12 @@ const DEFAULT_SCENARIO: OperationalScenario = {
   higherHq: 'USAFRICOM',
   aorRegion: 'Bab-el-Mandeb & Western Indian Ocean',
   classification: 'UNCLASSIFIED',
-  uploadedDocuments: [
-    {
-      name: 'USAFRICOM_PLANORD_26-04.pdf',
-      size: '4.20 MB',
-      type: 'application/pdf',
-      uploadedAt: '08:45',
-    },
-    {
-      name: 'JIPOE_Red_Sea_Maritime_Threat_Estimate.pdf',
-      size: '12.80 MB',
-      type: 'application/pdf',
-      uploadedAt: '09:12',
-    },
-  ],
+  /*
+   * No seeded documents. The status badge now reflects real ingestion, so
+   * pre-loading entries that claim to be parsed without any extracted text
+   * would be the same fiction this feature exists to remove.
+   */
+  uploadedDocuments: [],
 };
 
 /**
@@ -80,47 +76,16 @@ function createInitialPlanningState(scenario: OperationalScenario): PlanningStat
 }
 
 export default function HomePage() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
-
-  // Initialize auth listener
-  React.useEffect(() => {
-    // Bypass authentication entirely for local development
-    if (process.env.NODE_ENV === 'development') {
-      setIsAuthenticated(true);
-      setIsAuthLoading(false);
-      return;
-    }
-
-    const unsubscribe = authService.onAuthStateChanged((user) => {
-      if (user && user.email === 'neoderek2005@gmail.com') {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
-      setIsAuthLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
   const initialState = useMemo(() => createInitialPlanningState(DEFAULT_SCENARIO), []);
 
-  if (isAuthLoading) {
-    return (
-      <div className="flex-1 flex min-h-screen bg-[#090d13] items-center justify-center">
-        <div className="w-8 h-8 border-2 border-joint-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
-  }
-
   return (
-    <PlanningProvider initialState={initialState}>
-      <PlanningWorkspace />
-    </PlanningProvider>
+    <AuthGate>
+      <TrialProvider>
+        <PlanningProvider initialState={initialState}>
+          <PlanningWorkspace />
+        </PlanningProvider>
+      </TrialProvider>
+    </AuthGate>
   );
 }
 
@@ -129,13 +94,65 @@ export default function HomePage() {
  * context, so this only owns which phase is showing and the modals.
  */
 function PlanningWorkspace() {
-  const { scenario, setScenario } = usePlanning();
+  const { scenario, setScenario, resetPlanning } = usePlanning();
+  const { session } = useTrial();
 
   const [selectedPhase, setSelectedPhase] = useState<number>(1);
   const [isScenarioModalOpen, setIsScenarioModalOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+  const [isTrialModalOpen, setIsTrialModalOpen] = useState<boolean>(false);
 
   const openExportModal = () => setIsExportModalOpen(true);
+
+  /*
+   * A tool-arm session starts from a blank workspace oriented to its packet.
+   *
+   * Two things would otherwise contaminate the measure, and neither should
+   * depend on the observer remembering a step on a busy day. Planning state
+   * survives between sessions, so a second participant on the same machine
+   * would open the first one's half-written order. And the workspace is built
+   * from a fixed default scenario, so whichever packet that default happens to
+   * match would arrive pre-oriented while the other arrived contradicted.
+   */
+  const preparedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!session || session.arm !== 'tool') return;
+    if (preparedFor.current === session.id) return;
+    preparedFor.current = session.id;
+    resetPlanning(
+      createInitialPlanningState({
+        ...DEFAULT_SCENARIO,
+        ...TRIAL_PACKETS[session.packet].scenario,
+        /* No planner's name on screen or in the export: the completeness
+           scoring is blind, and a name is a tell. */
+        commandingOfficer: 'Lead Planner',
+        officerRole: 'J-5 Planner',
+        uploadedDocuments: [],
+      })
+    );
+  }, [session, resetPlanning]);
+
+  /*
+   * The trial console is opened by URL rather than by a control in the
+   * chrome. Observers run the trial from a prepared link; planners using the
+   * tool for real never see it.
+   */
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('trial')) {
+      setIsTrialModalOpen(true);
+    }
+  }, []);
+
+  /*
+   * Which step is open, and for how long. A no-op outside a trial.
+   *
+   * Keyed on the session as well as the step so that enrolling a participant
+   * records where they are starting from. Without it the first step a planner
+   * works in has no entry event and drops out of the dwell breakdown.
+   */
+  useEffect(() => {
+    emit('step.enter', { step: selectedPhase });
+  }, [selectedPhase, session?.id]);
 
   const phaseIcons = [
     Radio,        // Phase 1: Initiation
@@ -239,14 +256,8 @@ function PlanningWorkspace() {
               <CoaComparison onOpenExportModal={openExportModal} />
             ) : selectedPhase === 6 ? (
               <CoaApproval onOpenExportModal={openExportModal} />
-            ) : selectedPhase === 7 ? (
-              <PlanOrderDevelopment onOpenExportModal={openExportModal} />
             ) : (
-              <PhaseWizard
-                phaseId={selectedPhase}
-                scenario={scenario}
-                onOpenExportModal={openExportModal}
-              />
+              <PlanOrderDevelopment onOpenExportModal={openExportModal} />
             )}
           </div>
 
@@ -296,8 +307,16 @@ function PlanningWorkspace() {
                       <div className="truncate text-slate-300 text-[11px] max-w-[160px]">
                         {doc.name}
                       </div>
-                      <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/60 px-1 py-0.5 rounded border border-emerald-900/60">
-                        PARSED
+                      <span
+                        className={`text-[9px] font-mono px-1 py-0.5 rounded border ${
+                          doc.status === 'parsed' || doc.status === 'vision_parsed'
+                            ? 'text-emerald-400 bg-emerald-950/60 border-emerald-900/60'
+                            : doc.status === 'needs_vision'
+                            ? 'text-amber-400 bg-amber-950/60 border-amber-900/60'
+                            : 'text-red-400 bg-red-950/60 border-red-900/60'
+                        }`}
+                      >
+                        {statusLabel(doc.status)}
                       </span>
                     </div>
                   ))}
@@ -331,8 +350,15 @@ function PlanningWorkspace() {
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         activePhaseId={selectedPhase}
-        scenario={scenario}
       />
+
+      {/* Measured-trial harness. Inert unless a session is enrolled. */}
+      <TrialSetupModal
+        isOpen={isTrialModalOpen}
+        onClose={() => setIsTrialModalOpen(false)}
+      />
+      <TrialBar />
+      {session && <div className="h-14" aria-hidden />}
     </div>
   );
 }
