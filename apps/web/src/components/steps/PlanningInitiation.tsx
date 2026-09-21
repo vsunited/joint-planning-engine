@@ -8,7 +8,6 @@ import {
   INITIAL_STAFF_ACTIONS,
 } from '@jpe/shared';
 import {
-  Sparkles,
   Radio,
   Users,
   FileWarning,
@@ -1104,7 +1103,6 @@ export const PlanningInitiation: React.FC<PlanningInitiationProps> = ({
 }) => {
   const { scenario, planningInit: state, setPlanningInit: onStateChange } = usePlanning();
   const [activeTab, setActiveTab] = useState<TabId>('trigger');
-  const [generating, setGenerating] = useState(false);
 
   return (
     <div className="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-2xl flex flex-col flex-1">
@@ -1128,17 +1126,6 @@ export const PlanningInitiation: React.FC<PlanningInitiationProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setGenerating(true);
-                setTimeout(() => setGenerating(false), 900);
-              }}
-              disabled={generating}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-2 transition shadow-md shadow-emerald-950/40 disabled:opacity-50"
-            >
-              <Sparkles className={`w-3.5 h-3.5 ${generating ? 'animate-spin' : ''}`} />
-              <span>{generating ? 'Synthesizing...' : 'AI Staff Assistant'}</span>
-            </button>
             <button
               onClick={onOpenExportModal}
               className="px-3.5 py-2 bg-joint-950/90 hover:bg-joint-900 text-joint-200 text-xs font-semibold rounded-lg border border-joint-700/80 hover:border-joint-500 transition flex items-center gap-1.5 shadow-sm"

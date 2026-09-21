@@ -9,7 +9,7 @@ import {
   STAFF_DIRECTORATES,
 } from '@jpe/shared';
 import {
-  Sparkles,
+  Cpu,
   Eye,
   ListTodo,
   BrainCircuit,
@@ -28,6 +28,8 @@ import {
 } from 'lucide-react';
 import { OperationalScenario } from '@/types/scenario';
 import { usePlanning } from '@/context/PlanningContext';
+import { AiTaskExtractionPanel } from '@/components/AiTaskExtractionPanel';
+import { AssistantSettingsModal } from '@/components/AssistantSettingsModal';
 import {
   MissionAnalysisState,
   MissionTask,
@@ -612,7 +614,8 @@ export const MissionAnalysis: React.FC<MissionAnalysisProps> = ({
 }) => {
   const { scenario, missionAnalysis: state, setMissionAnalysis: onStateChange } = usePlanning();
   const [activeTab, setActiveTab] = useState<TabId>('tasks');
-  const [generating, setGenerating] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <div className="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-2xl flex flex-col flex-1">
@@ -636,12 +639,11 @@ export const MissionAnalysis: React.FC<MissionAnalysisProps> = ({
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => { setGenerating(true); setTimeout(() => setGenerating(false), 900); }}
-              disabled={generating}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-2 transition shadow-md shadow-emerald-950/40 disabled:opacity-50"
+              onClick={() => setAiOpen(true)}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-2 transition shadow-md shadow-emerald-950/40"
             >
-              <Sparkles className={`w-3.5 h-3.5 ${generating ? 'animate-spin' : ''}`} />
-              <span>{generating ? 'Synthesizing...' : 'AI Staff Assistant'}</span>
+              <Cpu className="w-3.5 h-3.5" />
+              <span>Extract Tasks from Order</span>
             </button>
             <button
               onClick={onOpenExportModal}
@@ -671,6 +673,14 @@ export const MissionAnalysis: React.FC<MissionAnalysisProps> = ({
           })}
         </div>
       </div>
+
+      <AiTaskExtractionPanel
+        isOpen={aiOpen}
+        onClose={() => setAiOpen(false)}
+        onOpenSettings={() => { setAiOpen(false); setSettingsOpen(true); }}
+        onAccept={(tasks) => onStateChange({ ...state, tasks: [...state.tasks, ...tasks] })}
+      />
+      <AssistantSettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       <div className="p-6 flex-1 flex flex-col overflow-y-auto">
         {activeTab === 'tasks' && <TaskAnalysisTab state={state} onChange={onStateChange} />}

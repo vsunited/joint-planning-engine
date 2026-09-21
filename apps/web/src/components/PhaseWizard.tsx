@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { JPP_PHASES, JOINT_FUNCTIONS } from '@jpe/shared';
 import { 
-  Sparkles, 
   Check, 
   ChevronRight, 
   FileText, 
@@ -31,7 +30,6 @@ export const PhaseWizard: React.FC<PhaseWizardProps> = ({
   const [commanderIntent, setCommanderIntent] = useState<string>(
     `Commander, ${scenario.jtfName} initiates multi-domain joint shaping operations in support of Operation ${scenario.operationName}. Joint forces will integrate air, maritime, land, cyber, and space capabilities under unified C2 to achieve regional deterrence and secure critical lines of communication.`
   );
-  const [generating, setGenerating] = useState<boolean>(false);
 
   return (
     <div className="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-2xl flex flex-col flex-1">
@@ -57,17 +55,6 @@ export const PhaseWizard: React.FC<PhaseWizardProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setGenerating(true);
-                setTimeout(() => setGenerating(false), 900);
-              }}
-              disabled={generating}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-2 transition shadow-md shadow-emerald-950/40 disabled:opacity-50"
-            >
-              <Sparkles className={`w-3.5 h-3.5 ${generating ? 'animate-spin' : ''}`} />
-              <span>{generating ? 'Synthesizing...' : 'AI Staff Assistant'}</span>
-            </button>
             <button 
               onClick={onOpenExportModal}
               className="px-3.5 py-2 bg-joint-950/90 hover:bg-joint-900 text-joint-200 text-xs font-semibold rounded-lg border border-joint-700/80 hover:border-joint-500 transition flex items-center gap-1.5 shadow-sm"
@@ -83,7 +70,7 @@ export const PhaseWizard: React.FC<PhaseWizardProps> = ({
           {[
             { id: 'overview', label: 'Doctrinal Overview' },
             { id: 'worksheets', label: 'Staff Worksheet' },
-            { id: 'ai_synthesis', label: 'AI Joint Estimates' },
+            { id: 'ai_synthesis', label: 'Staff Estimates' },
             { id: 'deliverables', label: 'Required Deliverables' },
           ].map((tab) => (
             <button
@@ -146,10 +133,6 @@ export const PhaseWizard: React.FC<PhaseWizardProps> = ({
                 />
                 <div className="flex items-center justify-between mt-2 text-[11px] text-slate-400 font-mono">
                   <span>Grounding: JP 5-0 Section 3</span>
-                  <button className="text-joint-300 hover:text-joint-200 font-medium flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" />
-                    Refine with AI Suggestions
-                  </button>
                 </div>
               </div>
             </div>
@@ -201,10 +184,10 @@ export const PhaseWizard: React.FC<PhaseWizardProps> = ({
 
         {activeTab === 'ai_synthesis' && (
           <div className="p-8 text-center text-slate-400">
-            <Sparkles className="w-8 h-8 text-joint-400 mx-auto mb-2" />
-            <h4 className="text-sm font-bold text-slate-200">Gemini Vertex AI Co-Planner</h4>
+            <Layers className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+            <h4 className="text-sm font-bold text-slate-200">Staff Estimate Synthesis</h4>
             <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-              Synthesizing running estimates across J1 through J6 for Operation {scenario.operationName}.
+              Not yet implemented for this step.
             </p>
           </div>
         )}

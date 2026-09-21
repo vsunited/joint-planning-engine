@@ -121,6 +121,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@jpe/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@jpe/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -167,6 +170,16 @@ importers:
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.19
+      typescript:
+        specifier: ^5.8.2
+        version: 5.9.3
+
+  packages/ai:
+    dependencies:
+      '@jpe/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
       typescript:
         specifier: ^5.8.2
         version: 5.9.3

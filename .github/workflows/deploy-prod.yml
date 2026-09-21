@@ -37,6 +37,9 @@ jobs:
       - name: Typecheck shared package
         run: pnpm --filter @jpe/shared exec tsc --noEmit
 
+      - name: Typecheck ai package
+        run: pnpm --filter @jpe/ai exec tsc --noEmit
+
       - name: Typecheck web app
         run: pnpm --filter @jpe/web exec tsc --noEmit
 
