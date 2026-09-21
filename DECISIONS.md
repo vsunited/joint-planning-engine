@@ -3,6 +3,7 @@
 ## 1. Initial Monorepo Scaffold
 - **Decision:** Use Turborepo with pnpm workspaces.
 - **Rationale:** Supports shared code between Next.js (web) and Expo (mobile) apps while maintaining strict dependency boundaries and fast builds.
+- **Outcome (Sep 2026):** The mobile client and the shared `ui` package were never built, and their empty directories have been removed. The monorepo still earns its keep: `shared` holds the doctrinal constants that both the web app and the assistant's prompts are built from.
 
 ## 2. Auth Abstraction Layer
 - **Decision:** Implement `IAuthService` interface instead of direct CAC PIV federation.

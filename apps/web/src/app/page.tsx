@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { JPP_PHASES, JOINT_FUNCTIONS } from '@jpe/shared';
 import { Header } from '@/components/Header';
 import { ClassificationBar } from '@/components/ClassificationBar';
-import { PhaseWizard } from '@/components/PhaseWizard';
 import { PlanningInitiation, createDefaultPlanningInitState } from '@/components/steps/PlanningInitiation';
 import { MissionAnalysis, createDefaultMissionAnalysisState } from '@/components/steps/MissionAnalysis';
 import { CoaDevelopment, createDefaultCoaDevelopmentState } from '@/components/steps/CoaDevelopment';
@@ -291,14 +290,8 @@ function PlanningWorkspace() {
               <CoaComparison onOpenExportModal={openExportModal} />
             ) : selectedPhase === 6 ? (
               <CoaApproval onOpenExportModal={openExportModal} />
-            ) : selectedPhase === 7 ? (
-              <PlanOrderDevelopment onOpenExportModal={openExportModal} />
             ) : (
-              <PhaseWizard
-                phaseId={selectedPhase}
-                scenario={scenario}
-                onOpenExportModal={openExportModal}
-              />
+              <PlanOrderDevelopment onOpenExportModal={openExportModal} />
             )}
           </div>
 

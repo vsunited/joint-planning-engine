@@ -199,8 +199,8 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
                   onChange={e => setScenario({ ...scenario, classification: e.target.value as any })}
                   className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-joint-500 transition font-mono"
                 >
-                  <option value="UNCLASSIFIED">UNCLASSIFIED // FOUO</option>
-                  <option value="CUI">CUI // REL TO USA, FVEY</option>
+                  <option value="UNCLASSIFIED">UNCLASSIFIED</option>
+                  <option value="CUI">CUI</option>
                 </select>
               </div>
             </div>
@@ -318,7 +318,12 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
             <div className="bg-joint-950/40 border border-joint-900/60 rounded-lg p-3 text-[11px] text-slate-300 flex items-start gap-2">
               <Info className="w-4 h-4 text-joint-400 shrink-0 mt-0.5" />
               <div>
-                <strong>Automated JPP Ingestion:</strong> Ingested directives are parsed by the AI Co-Planner to extract specified, implied, and essential tasks, Commander's Critical Information Requirements (CCIRs), and timeline constraints directly into Phase 1 & 2 worksheets.
+                <strong>What happens to an uploaded order:</strong> text is extracted here
+                and on upload — from PDF, Word, PowerPoint and plain text, with scans
+                transcribed by a local vision model if one is configured. Step 2 can then run
+                task extraction against that text. Results are staged for review; the planner
+                accepts, edits or discards them, and nothing is written into a worksheet
+                without that decision.
               </div>
             </div>
           </div>
