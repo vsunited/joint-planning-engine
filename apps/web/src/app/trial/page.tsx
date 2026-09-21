@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { FlaskConical, Settings2 } from 'lucide-react';
+import { AuthGate } from '@/components/AuthGate';
 import { TrialProvider, useTrial } from '@/context/TrialContext';
 import { TrialBar } from '@/components/TrialBar';
 import { TrialSetupModal } from '@/components/TrialSetupModal';
@@ -22,9 +23,11 @@ import { TRIAL_PACKETS } from '@/lib/telemetry/packets';
  */
 export default function TrialConsolePage() {
   return (
-    <TrialProvider>
-      <BaselineConsole />
-    </TrialProvider>
+    <AuthGate>
+      <TrialProvider>
+        <BaselineConsole />
+      </TrialProvider>
+    </AuthGate>
   );
 }
 

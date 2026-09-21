@@ -16,8 +16,7 @@ import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
 import { statusLabel } from '@/lib/ingest';
 import { PlanningProvider, PlanningState, usePlanning } from '@/context/PlanningContext';
-import { LoginScreen } from '@/components/LoginScreen';
-import { authService } from '@/lib/authService';
+import { AuthGate } from '@/components/AuthGate';
 import { TrialProvider, useTrial } from '@/context/TrialContext';
 import { TrialBar } from '@/components/TrialBar';
 import { TrialSetupModal } from '@/components/TrialSetupModal';
@@ -77,49 +76,16 @@ function createInitialPlanningState(scenario: OperationalScenario): PlanningStat
 }
 
 export default function HomePage() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
-
-  // Initialize auth listener
-  React.useEffect(() => {
-    // Bypass authentication entirely for local development
-    if (process.env.NODE_ENV === 'development') {
-      setIsAuthenticated(true);
-      setIsAuthLoading(false);
-      return;
-    }
-
-    const unsubscribe = authService.onAuthStateChanged((user) => {
-      if (user && user.email === 'neoderek2005@gmail.com') {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
-      setIsAuthLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
   const initialState = useMemo(() => createInitialPlanningState(DEFAULT_SCENARIO), []);
 
-  if (isAuthLoading) {
-    return (
-      <div className="flex-1 flex min-h-screen bg-[#090d13] items-center justify-center">
-        <div className="w-8 h-8 border-2 border-joint-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
-  }
-
   return (
-    <TrialProvider>
-      <PlanningProvider initialState={initialState}>
-        <PlanningWorkspace />
-      </PlanningProvider>
-    </TrialProvider>
+    <AuthGate>
+      <TrialProvider>
+        <PlanningProvider initialState={initialState}>
+          <PlanningWorkspace />
+        </PlanningProvider>
+      </TrialProvider>
+    </AuthGate>
   );
 }
 
