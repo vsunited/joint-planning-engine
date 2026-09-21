@@ -33,6 +33,26 @@ At five participants, a perfect result — every single planner faster with the
 tool — still returns p = 0.063 and cannot be called significant. At six it
 returns p = 0.031 and can.
 
+But six only clears the bar if **every one of the six** goes the same way. One
+planner slower with the tool and it falls back to 0.063:
+
+| n | all same way | one slower | two slower |
+|---|---|---|---|
+| 5 | 0.063 | 0.125 | 0.313 |
+| 6 | **0.031** | 0.063 | 0.156 |
+| 7 | **0.016** | **0.031** | 0.078 |
+| 8 | **0.008** | **0.016** | **0.039** |
+
+These are untrained planners on first exposure to the tool, working against a
+method they have used for years. One of them being slower is an ordinary
+outcome, not a tail risk. Eight is the number that survives it.
+
+**A significance claim is optional.** The criterion being answered is whether
+original, honest measurement exists, and that is satisfied at n = 4 with the
+raw data published and the result reported descriptively. Do not let the search
+for a sixth participant push the trial past the submission date; a finished
+pilot with four beats an unfinished one with eight.
+
 **The marginal sixth participant is worth more than the other five combined,
 because they are what makes any inferential claim available at all.** Recruit
 eight if they can be found, to absorb two dropouts and still clear six.
@@ -100,6 +120,11 @@ Identical wording in both arms. Read it; do not paraphrase.
    assigned automatically.
    - Baseline: `/trial` — packet and clock only.
    - Tool: `/?trial=1` — the workspace with the trial bar docked.
+
+   Starting a tool-arm session clears the workspace and reorients it to that
+   packet's command and operation. The observer does not configure anything,
+   and does not need to reload between participants — both were contamination
+   risks that should not depend on remembering a step on a busy day.
 3. Participant presses **Packet opened** and reads. *(Clock starts.)*
 4. Participant presses **Drafting started** at their first committed words.
 5. Participant works. **The observer does not help, does not answer doctrinal

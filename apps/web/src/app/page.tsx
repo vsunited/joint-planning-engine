@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { JPP_PHASES, JOINT_FUNCTIONS } from '@jpe/shared';
 import { Header } from '@/components/Header';
 import { ClassificationBar } from '@/components/ClassificationBar';
@@ -23,6 +23,7 @@ import { TrialProvider, useTrial } from '@/context/TrialContext';
 import { TrialBar } from '@/components/TrialBar';
 import { TrialSetupModal } from '@/components/TrialSetupModal';
 import { emit } from '@/lib/telemetry/probe';
+import { TRIAL_PACKETS } from '@/lib/telemetry/packets';
 import {
   Shield,
   Layers,
@@ -128,7 +129,7 @@ export default function HomePage() {
  * context, so this only owns which phase is showing and the modals.
  */
 function PlanningWorkspace() {
-  const { scenario, setScenario } = usePlanning();
+  const { scenario, setScenario, resetPlanning } = usePlanning();
   const { session } = useTrial();
 
   const [selectedPhase, setSelectedPhase] = useState<number>(1);
@@ -137,6 +138,34 @@ function PlanningWorkspace() {
   const [isTrialModalOpen, setIsTrialModalOpen] = useState<boolean>(false);
 
   const openExportModal = () => setIsExportModalOpen(true);
+
+  /*
+   * A tool-arm session starts from a blank workspace oriented to its packet.
+   *
+   * Two things would otherwise contaminate the measure, and neither should
+   * depend on the observer remembering a step on a busy day. Planning state
+   * survives between sessions, so a second participant on the same machine
+   * would open the first one's half-written order. And the workspace is built
+   * from a fixed default scenario, so whichever packet that default happens to
+   * match would arrive pre-oriented while the other arrived contradicted.
+   */
+  const preparedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!session || session.arm !== 'tool') return;
+    if (preparedFor.current === session.id) return;
+    preparedFor.current = session.id;
+    resetPlanning(
+      createInitialPlanningState({
+        ...DEFAULT_SCENARIO,
+        ...TRIAL_PACKETS[session.packet].scenario,
+        /* No planner's name on screen or in the export: the completeness
+           scoring is blind, and a name is a tell. */
+        commandingOfficer: 'Lead Planner',
+        officerRole: 'J-5 Planner',
+        uploadedDocuments: [],
+      })
+    );
+  }, [session, resetPlanning]);
 
   /*
    * The trial console is opened by URL rather than by a control in the

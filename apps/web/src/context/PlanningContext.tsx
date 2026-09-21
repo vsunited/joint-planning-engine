@@ -50,6 +50,14 @@ interface PlanningContextValue extends PlanningState {
   setCoaComparison: (value: CoaComparisonState) => void;
   setCoaApproval: (value: CoaApprovalState) => void;
   setPlanOrderDevelopment: (value: PlanOrderDevelopmentState) => void;
+  /**
+   * Replaces the entire workspace.
+   *
+   * Used by the trial harness to guarantee each participant starts from an
+   * identical blank slate. Two sessions run back to back on one machine would
+   * otherwise leave the second participant looking at the first one's order.
+   */
+  resetPlanning: (value: PlanningState) => void;
 }
 
 const PlanningContext = createContext<PlanningContextValue | null>(null);
@@ -101,6 +109,11 @@ export const PlanningProvider: React.FC<{
     []
   );
 
+  const resetPlanning = useCallback((value: PlanningState) => {
+    mirror.current = value;
+    setState(value);
+  }, []);
+
   const setScenario = useCallback(
     (value: OperationalScenario) => apply('scenario', value),
     [apply]
@@ -145,6 +158,7 @@ export const PlanningProvider: React.FC<{
       setCoaComparison,
       setCoaApproval,
       setPlanOrderDevelopment,
+      resetPlanning,
     }),
     [
       state,
@@ -156,6 +170,7 @@ export const PlanningProvider: React.FC<{
       setCoaComparison,
       setCoaApproval,
       setPlanOrderDevelopment,
+      resetPlanning,
     ]
   );
 

@@ -23,12 +23,34 @@ export interface PacketDefinition {
   operation: string;
   issuer: string;
   body: string;
+  /**
+   * The workspace header for this packet's tool-arm session.
+   *
+   * Without this the app always announced JTF-Horn of Africa and Operation
+   * Sentinel Resolve, which happens to be packet A. A packet A participant
+   * would have found the tool already oriented to their directive while a
+   * packet B participant read a header contradicting theirs — a head start for
+   * one packet and an obstacle for the other, landing directly in the measure
+   * the trial exists to take.
+   */
+  scenario: {
+    jtfName: string;
+    operationName: string;
+    higherHq: string;
+    aorRegion: string;
+  };
 }
 
 const PACKET_A: PacketDefinition = {
   id: 'A',
   operation: 'OPERATION SENTINEL RESOLVE',
   issuer: 'USAFRICOM to JTF-Horn of Africa',
+  scenario: {
+    jtfName: 'JTF-Horn of Africa',
+    operationName: 'Sentinel Resolve',
+    higherHq: 'USAFRICOM',
+    aorRegion: 'Bab-el-Mandeb & Southern Red Sea',
+  },
   body: [
     'UNCLASSIFIED — FICTIONAL TRAINING SCENARIO',
     'PLANORD 26-04 / USAFRICOM TO COMMANDER, JTF-HORN OF AFRICA',
@@ -83,6 +105,12 @@ const PACKET_B: PacketDefinition = {
   id: 'B',
   operation: 'OPERATION IRON MERIDIAN',
   issuer: 'USCENTCOM to JTF-Arabian Gulf',
+  scenario: {
+    jtfName: 'JTF-Arabian Gulf',
+    operationName: 'Iron Meridian',
+    higherHq: 'USCENTCOM',
+    aorRegion: 'Strait of Hormuz & Gulf of Oman',
+  },
   body: [
     'UNCLASSIFIED — FICTIONAL TRAINING SCENARIO',
     'PLANORD 26-09 / USCENTCOM TO COMMANDER, JTF-ARABIAN GULF',
