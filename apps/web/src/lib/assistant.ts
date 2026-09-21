@@ -5,6 +5,7 @@ import {
   AssistantConfig,
   DEFAULT_ASSISTANT_CONFIG,
 } from '@jpe/ai';
+import { timed } from '@/lib/telemetry/probe';
 
 /**
  * Assistant singleton and its persisted configuration.
@@ -53,6 +54,26 @@ export function saveAssistantConfig(config: AssistantConfig): void {
   assistant.setConfig(config);
 }
 
-export const assistant = new OpenAiCompatibleAssistant(
-  typeof window === 'undefined' ? {} : loadAssistantConfig()
+/**
+ * The assistant, with its capability calls timed.
+ *
+ * Inference latency is the tool arm's main cost in a measured trial, and it
+ * has to be reported next to any time saved — a result that quietly omits a
+ * ninety-second wait is not a result worth submitting. Outside a trial the
+ * wrapper is a straight pass-through.
+ */
+function instrument(inner: OpenAiCompatibleAssistant): OpenAiCompatibleAssistant {
+  const capabilities = ['extractTasks', 'draftCoa', 'critiqueCoa', 'transcribeImages'] as const;
+
+  capabilities.forEach(name => {
+    const original = inner[name].bind(inner) as (...args: unknown[]) => Promise<unknown>;
+    (inner as unknown as Record<string, unknown>)[name] = (...args: unknown[]) =>
+      timed(name, () => original(...args));
+  });
+
+  return inner;
+}
+
+export const assistant = instrument(
+  new OpenAiCompatibleAssistant(typeof window === 'undefined' ? {} : loadAssistantConfig())
 );

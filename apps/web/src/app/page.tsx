@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { JPP_PHASES, JOINT_FUNCTIONS } from '@jpe/shared';
 import { Header } from '@/components/Header';
 import { ClassificationBar } from '@/components/ClassificationBar';
@@ -19,6 +19,10 @@ import { statusLabel } from '@/lib/ingest';
 import { PlanningProvider, PlanningState, usePlanning } from '@/context/PlanningContext';
 import { LoginScreen } from '@/components/LoginScreen';
 import { authService } from '@/lib/authService';
+import { TrialProvider, useTrial } from '@/context/TrialContext';
+import { TrialBar } from '@/components/TrialBar';
+import { TrialSetupModal } from '@/components/TrialSetupModal';
+import { emit } from '@/lib/telemetry/probe';
 import {
   Shield,
   Layers,
@@ -111,9 +115,11 @@ export default function HomePage() {
   }
 
   return (
-    <PlanningProvider initialState={initialState}>
-      <PlanningWorkspace />
-    </PlanningProvider>
+    <TrialProvider>
+      <PlanningProvider initialState={initialState}>
+        <PlanningWorkspace />
+      </PlanningProvider>
+    </TrialProvider>
   );
 }
 
@@ -123,12 +129,36 @@ export default function HomePage() {
  */
 function PlanningWorkspace() {
   const { scenario, setScenario } = usePlanning();
+  const { session } = useTrial();
 
   const [selectedPhase, setSelectedPhase] = useState<number>(1);
   const [isScenarioModalOpen, setIsScenarioModalOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+  const [isTrialModalOpen, setIsTrialModalOpen] = useState<boolean>(false);
 
   const openExportModal = () => setIsExportModalOpen(true);
+
+  /*
+   * The trial console is opened by URL rather than by a control in the
+   * chrome. Observers run the trial from a prepared link; planners using the
+   * tool for real never see it.
+   */
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('trial')) {
+      setIsTrialModalOpen(true);
+    }
+  }, []);
+
+  /*
+   * Which step is open, and for how long. A no-op outside a trial.
+   *
+   * Keyed on the session as well as the step so that enrolling a participant
+   * records where they are starting from. Without it the first step a planner
+   * works in has no entry event and drops out of the dwell breakdown.
+   */
+  useEffect(() => {
+    emit('step.enter', { step: selectedPhase });
+  }, [selectedPhase, session?.id]);
 
   const phaseIcons = [
     Radio,        // Phase 1: Initiation
@@ -333,6 +363,14 @@ function PlanningWorkspace() {
         onClose={() => setIsExportModalOpen(false)}
         activePhaseId={selectedPhase}
       />
+
+      {/* Measured-trial harness. Inert unless a session is enrolled. */}
+      <TrialSetupModal
+        isOpen={isTrialModalOpen}
+        onClose={() => setIsTrialModalOpen(false)}
+      />
+      <TrialBar />
+      {session && <div className="h-14" aria-hidden />}
     </div>
   );
 }

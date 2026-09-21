@@ -1,7 +1,16 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { OperationalScenario } from '@/types/scenario';
+import { emit, isRecording } from '@/lib/telemetry/probe';
+import { diffState } from '@/lib/telemetry/diff';
 import {
   PlanningInitiationState,
   MissionAnalysisState,
@@ -56,39 +65,73 @@ export const PlanningProvider: React.FC<{
 }> = ({ initialState, children }) => {
   const [state, setState] = useState<PlanningState>(initialState);
 
-  const setScenario = useCallback(
-    (scenario: OperationalScenario) => setState(s => ({ ...s, scenario })),
-    []
-  );
-  const setPlanningInit = useCallback(
-    (planningInit: PlanningInitiationState) => setState(s => ({ ...s, planningInit })),
-    []
-  );
-  const setMissionAnalysis = useCallback(
-    (missionAnalysis: MissionAnalysisState) => setState(s => ({ ...s, missionAnalysis })),
-    []
-  );
-  const setCoaDevelopment = useCallback(
-    (coaDevelopment: CoaDevelopmentState) => setState(s => ({ ...s, coaDevelopment })),
-    []
-  );
-  const setCoaAnalysis = useCallback(
-    (coaAnalysis: CoaAnalysisState) => setState(s => ({ ...s, coaAnalysis })),
-    []
-  );
-  const setCoaComparison = useCallback(
-    (coaComparison: CoaComparisonState) => setState(s => ({ ...s, coaComparison })),
-    []
-  );
-  const setCoaApproval = useCallback(
-    (coaApproval: CoaApprovalState) => setState(s => ({ ...s, coaApproval })),
+  /*
+   * A mirror of state, updated synchronously inside `apply`.
+   *
+   * Trial telemetry needs the previous value of a slice to work out which
+   * field changed. Reading it from `state` would hand back a stale value when
+   * two setters fire in the same tick, and diffing inside the setState updater
+   * would double-count under StrictMode, which re-invokes updaters. `apply` is
+   * only ever called from event handlers, so mirroring here is exact.
+   */
+  const mirror = useRef<PlanningState>(initialState);
+
+  /**
+   * The single write path for every step.
+   *
+   * All seven step modules mutate through here, which is what lets the trial
+   * harness instrument field edits across the whole application at one point
+   * instead of in each component. When no trial is running `isRecording()` is
+   * false and this costs one comparison.
+   */
+  const apply = useCallback(
+    <K extends keyof PlanningState>(key: K, value: PlanningState[K]) => {
+      const prev = mirror.current[key];
+      if (prev === value) return;
+
+      if (isRecording()) {
+        diffState(prev, value, key as string).forEach(change =>
+          emit('field.edit', { path: change.path, len: change.len })
+        );
+      }
+
+      mirror.current = { ...mirror.current, [key]: value };
+      setState(s => ({ ...s, [key]: value }));
+    },
     []
   );
 
+  const setScenario = useCallback(
+    (value: OperationalScenario) => apply('scenario', value),
+    [apply]
+  );
+  const setPlanningInit = useCallback(
+    (value: PlanningInitiationState) => apply('planningInit', value),
+    [apply]
+  );
+  const setMissionAnalysis = useCallback(
+    (value: MissionAnalysisState) => apply('missionAnalysis', value),
+    [apply]
+  );
+  const setCoaDevelopment = useCallback(
+    (value: CoaDevelopmentState) => apply('coaDevelopment', value),
+    [apply]
+  );
+  const setCoaAnalysis = useCallback(
+    (value: CoaAnalysisState) => apply('coaAnalysis', value),
+    [apply]
+  );
+  const setCoaComparison = useCallback(
+    (value: CoaComparisonState) => apply('coaComparison', value),
+    [apply]
+  );
+  const setCoaApproval = useCallback(
+    (value: CoaApprovalState) => apply('coaApproval', value),
+    [apply]
+  );
   const setPlanOrderDevelopment = useCallback(
-    (planOrderDevelopment: PlanOrderDevelopmentState) =>
-      setState(s => ({ ...s, planOrderDevelopment })),
-    []
+    (value: PlanOrderDevelopmentState) => apply('planOrderDevelopment', value),
+    [apply]
   );
 
   const value = useMemo<PlanningContextValue>(
