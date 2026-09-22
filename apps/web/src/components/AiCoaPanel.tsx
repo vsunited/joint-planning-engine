@@ -65,7 +65,7 @@ export const AiCoaPanel: React.FC<AiCoaPanelProps> = ({
   onAcceptCritique,
   onOpenSettings,
 }) => {
-  const { scenario, missionAnalysis, coaDevelopment } = usePlanning();
+  const { scenario, echelon, missionAnalysis, coaDevelopment } = usePlanning();
   const [guidance, setGuidance] = useState('');
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
@@ -75,9 +75,8 @@ export const AiCoaPanel: React.FC<AiCoaPanelProps> = ({
   if (!isOpen) return null;
 
   const ctx = {
-    jtfName: scenario.jtfName,
+    echelon,
     operationName: scenario.operationName,
-    higherHq: scenario.higherHq,
     aorRegion: scenario.aorRegion,
     classification: scenario.classification,
     missionStatement: missionAnalysis.restatedMission.fullStatement,

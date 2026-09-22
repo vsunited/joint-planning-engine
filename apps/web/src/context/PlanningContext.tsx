@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import type { PlanningEchelon } from '@jpe/shared';
 import { OperationalScenario } from '@/types/scenario';
 import { emit, isRecording } from '@/lib/telemetry/probe';
 import { diffState } from '@/lib/telemetry/diff';
@@ -32,6 +33,15 @@ import {
  */
 export interface PlanningState {
   scenario: OperationalScenario;
+  /**
+   * The headquarters this staff plans as.
+   *
+   * Held here as well as in its own context so that product builders, which
+   * are pure functions of state, can put the command chain in a product header
+   * without reaching for a hook. The echelon context remains the authority;
+   * this is rebuilt from it whenever it changes.
+   */
+  echelon: PlanningEchelon;
   planningInit: PlanningInitiationState;
   missionAnalysis: MissionAnalysisState;
   coaDevelopment: CoaDevelopmentState;

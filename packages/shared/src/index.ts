@@ -1,4 +1,5 @@
 export {
+  COMMAND_ECHELONS,
   COMBATANT_COMMANDS,
   NON_CCMD_PLANNING_AUTHORITIES,
   JPP_PHASES,
@@ -66,6 +67,9 @@ export {
 } from './constants';
 
 export {
+  echelon,
+  describeChain,
+  detectAddressee,
   isCombatantCommand,
   combatantCommand,
   combatantCommandLabel,
@@ -73,6 +77,8 @@ export {
 } from './ccmd';
 
 export type {
+  EchelonLevel,
+  PlanningEchelon,
   CombatantCommand,
   PlanningAuthority,
   JppPhaseKey,

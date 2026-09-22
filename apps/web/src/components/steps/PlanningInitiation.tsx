@@ -1,5 +1,7 @@
 'use client';
 
+import type { PlanningEchelon } from '@jpe/shared';
+
 import type { PlanningAuthority } from '@jpe/shared';
 
 import React, { useState, useCallback, useMemo } from 'react';
@@ -46,7 +48,8 @@ import {
 // =============================================================================
 
 export function createDefaultPlanningInitState(
-  scenario: OperationalScenario
+  scenario: OperationalScenario,
+  echelon: PlanningEchelon
 ): PlanningInitiationState {
   const defaultMembers: PlanningOrgMember[] = STAFF_DIRECTORATES.map((dir) => ({
     directorate: dir,
@@ -67,7 +70,7 @@ export function createDefaultPlanningInitState(
     trigger: {
       type: 'WARNORD',
       // Always a combatant command now, so there is nothing to fall back to.
-      source: scenario.higherHq,
+      source: echelon.establishedBy,
       dtg: '',
       classification: scenario.classification,
       summary: '',
@@ -244,6 +247,7 @@ const TriggerAndGuidanceTab: React.FC<{
   onChange: (state: PlanningInitiationState) => void;
   scenario: OperationalScenario;
 }> = ({ state, onChange, scenario }) => {
+  const { echelon } = usePlanning();
   const updateTrigger = (updates: Partial<PlanningTrigger>) =>
     onChange({ ...state, trigger: { ...state.trigger, ...updates } });
 
@@ -301,7 +305,7 @@ const TriggerAndGuidanceTab: React.FC<{
                     {COMBATANT_COMMANDS.map((c) => (
                       <option key={c.key} value={c.key}>
                         {c.key}
-                        {c.key === scenario.higherHq ? '  (higher HQ)' : ''}
+                        {c.key === echelon.establishedBy ? '  (higher HQ)' : ''}
                       </option>
                     ))}
                   </optgroup>
@@ -342,7 +346,7 @@ const TriggerAndGuidanceTab: React.FC<{
       <div className="space-y-4">
         <SectionCard
           title="Commander's Initial Planning Guidance (CIPG)"
-          subtitle={`CDR ${scenario.jtfName} guidance to orient the staff`}
+          subtitle={`CDR ${echelon.designation} guidance to orient the staff`}
         >
           <div className="space-y-4">
             <TextArea
@@ -420,6 +424,7 @@ const PlanningOrgTab: React.FC<{
   onChange: (state: PlanningInitiationState) => void;
   scenario: OperationalScenario;
 }> = ({ state, onChange, scenario }) => {
+  const { echelon } = usePlanning();
   const updateOrg = (updates: Partial<PlanningOrganization>) =>
     onChange({ ...state, planningOrg: { ...state.planningOrg, ...updates } });
 
@@ -496,7 +501,7 @@ const PlanningOrgTab: React.FC<{
 
       {/* Staff Roster */}
       <SectionCard
-        title={`${scenario.jtfName} ${state.planningOrg.type} Staff Roster`}
+        title={`${echelon.designation} ${state.planningOrg.type} Staff Roster`}
         subtitle={`${assignedCount} of ${totalCount} positions filled`}
       >
         <div className="overflow-x-auto">
@@ -584,6 +589,7 @@ const WarnordBuilderTab: React.FC<{
   onChange: (state: PlanningInitiationState) => void;
   scenario: OperationalScenario;
 }> = ({ state, onChange, scenario }) => {
+  const { echelon } = usePlanning();
   const updateWarnord = (updates: Partial<WarnordContent>) =>
     onChange({ ...state, warnord: { ...state.warnord, ...updates } });
 
@@ -639,7 +645,7 @@ const WarnordBuilderTab: React.FC<{
           <FileWarning className="w-4 h-4 text-joint-400" />
           <div>
             <div className="text-xs font-bold text-white">
-              WARNORD — {scenario.jtfName}
+              WARNORD — {echelon.designation}
             </div>
             <div className="text-[10px] text-slate-400 font-mono">
               Operation {scenario.operationName} • {scenario.classification}
@@ -1120,7 +1126,7 @@ const StaffActionsTab: React.FC<{
 export const PlanningInitiation: React.FC<PlanningInitiationProps> = ({
   onOpenExportModal,
 }) => {
-  const { scenario, planningInit: state, setPlanningInit: onStateChange } = usePlanning();
+  const { scenario, echelon, planningInit: state, setPlanningInit: onStateChange } = usePlanning();
   const [activeTab, setActiveTab] = useState<TabId>('trigger');
 
   return (

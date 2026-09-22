@@ -1,3 +1,4 @@
+import type { PlanningEchelon } from '@jpe/shared';
 'use client';
 
 import React from 'react';
@@ -6,11 +7,13 @@ import { OperationalScenario } from '@/types/scenario';
 
 interface HeaderProps {
   scenario: OperationalScenario;
+  echelon: PlanningEchelon;
   onOpenScenarioModal: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   scenario,
+  echelon,
   onOpenScenarioModal,
 }) => {
   return (
@@ -31,11 +34,11 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
             <div className="text-[11px] text-slate-400 font-mono flex items-center gap-2 mt-0.5">
-              <span className="text-slate-200 font-semibold">{scenario.jtfName}</span>
+              <span className="text-slate-200 font-semibold">{echelon.designation}</span>
               <span className="text-slate-600">•</span>
               <span className="text-emerald-400/90 font-sans font-medium">Operation {scenario.operationName}</span>
               <span className="text-slate-600">•</span>
-              <span className="text-slate-500 text-[10px]">{scenario.higherHq}</span>
+              <span className="text-slate-500 text-[10px]">{echelon.establishedBy}</span>
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import type { PlanningEchelon } from '@jpe/shared';
 'use client';
 
 import React, { useMemo, useState } from 'react';
@@ -276,7 +277,8 @@ function prefillFor(sectionId: string, u: UpstreamStates): string[] {
 function draftDecisionStatement(
   coas: CourseOfAction[],
   selectedIds: string[],
-  scenario: OperationalScenario
+  scenario: OperationalScenario,
+  echelon: PlanningEchelon
 ): string {
   const selected = coas.filter(c => selectedIds.includes(c.id));
   if (!selected.length) return '';
@@ -284,7 +286,7 @@ function draftDecisionStatement(
     .map(c => {
       const s = c.statement;
       const parts = [
-        s.who || scenario.jtfName,
+        s.who || echelon.designation,
         s.what || c.narrative,
         s.when ? `commencing ${s.when}` : '',
         s.where ? `in ${s.where}` : '',
@@ -777,6 +779,7 @@ const StageStatement: React.FC<{
   upstream: UpstreamStates;
   scenario: OperationalScenario;
 }> = ({ state, onChange, upstream, scenario }) => {
+  const { echelon } = usePlanning();
   const ds = state.decisionStatement;
   const setDs = (updates: Partial<typeof ds>) =>
     onChange({ ...state, decisionStatement: { ...ds, ...updates } });
@@ -784,7 +787,8 @@ const StageStatement: React.FC<{
   const draft = draftDecisionStatement(
     upstream.coaDevState.coas,
     state.decision.selectedCoaIds,
-    scenario
+    scenario,
+    echelon
   );
 
   return (

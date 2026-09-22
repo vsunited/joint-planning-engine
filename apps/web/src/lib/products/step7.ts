@@ -9,10 +9,11 @@ export const STEP7_PRODUCTS: PlanningProduct[] = [
     phaseId: 7,
     label: 'Refined CONOPS',
     doctrineRef: 'JP 5-0, IV-58',
-    build: ({ scenario, planOrderDevelopment: s, coaApproval: a, coaDevelopment: d }) => {
+    build: ({ scenario, echelon, planOrderDevelopment: s, coaApproval: a, coaDevelopment: d }) => {
       const approved = d.coas.filter(c => a.decision.selectedCoaIds.includes(c.id));
       return classified(
         scenario,
+        echelon,
         'CONCEPT OF OPERATIONS',
         'JP 5-0, IV-58',
         blocks(
@@ -35,9 +36,10 @@ export const STEP7_PRODUCTS: PlanningProduct[] = [
     phaseId: 7,
     label: 'Time-Phased Force and Deployment Data',
     doctrineRef: 'JP 5-0, IV-59',
-    build: ({ scenario, planOrderDevelopment: s }) =>
+    build: ({ scenario, echelon, planOrderDevelopment: s }) =>
       classified(
         scenario,
+        echelon,
         'TIME-PHASED FORCE AND DEPLOYMENT DATA',
         'JP 5-0, IV-59',
         blocks(
@@ -54,9 +56,10 @@ export const STEP7_PRODUCTS: PlanningProduct[] = [
     phaseId: 7,
     label: 'Shortfall Register & Supporting Plans',
     doctrineRef: 'JP 5-0, Figure IV-17',
-    build: ({ scenario, planOrderDevelopment: s }) =>
+    build: ({ scenario, echelon, planOrderDevelopment: s }) =>
       classified(
         scenario,
+        echelon,
         'SHORTFALLS AND SUPPORTING PLANS',
         'JP 5-0, Figure IV-17',
         blocks(
@@ -98,9 +101,10 @@ export const STEP7_PRODUCTS: PlanningProduct[] = [
     phaseId: 7,
     label: 'Order Document & Review Status',
     doctrineRef: 'JP 5-0, IV-58 / CJCSM 3130.03',
-    build: ({ scenario, planOrderDevelopment: s }) =>
+    build: ({ scenario, echelon, planOrderDevelopment: s }) =>
       classified(
         scenario,
+        echelon,
         `${s.order.type} — ${s.order.title}`,
         'JP 5-0, IV-58 / CJCSM 3130.03',
         blocks(

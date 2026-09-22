@@ -1126,3 +1126,58 @@ export const NON_CCMD_PLANNING_AUTHORITIES = [
   { key: 'CJCS', label: 'CJCS / Joint Staff' },
   { key: 'OWN_AUTHORITY', label: 'Own authority — commander’s initiative' },
 ] as const;
+
+// =============================================================================
+// Command Echelon
+// JP 1 / JP 3-33 — the level a staff is planning at
+// =============================================================================
+
+/**
+ * Echelons a joint staff can plan at.
+ *
+ * The level is not decoration. A task is *specified* when the establishing
+ * authority's order states it to this headquarters, and *implied* when this
+ * headquarters derives it. Get the echelon wrong and Step 2's task
+ * classification is wrong, not merely worded oddly — which is why this is
+ * settled once and then held fixed rather than inferred per request.
+ *
+ * `issuesTo` is who receives what this echelon produces. A JTF issues to its
+ * components, never back up to the combatant command that established it.
+ */
+export const COMMAND_ECHELONS = [
+  {
+    key: 'ccmd',
+    label: 'Combatant Command',
+    short: 'CCMD',
+    plans: 'Theater campaign plans and contingency plans',
+    issuesTo: 'subordinate joint task forces and service components',
+  },
+  {
+    key: 'subunified',
+    label: 'Subordinate Unified Command',
+    short: 'Subunified',
+    plans: 'Operations within a delegated portion of the AOR',
+    issuesTo: 'assigned components and joint task forces',
+  },
+  {
+    key: 'jtf',
+    label: 'Joint Task Force',
+    short: 'JTF',
+    plans: 'Joint operations within a joint operations area',
+    issuesTo: 'functional and service components',
+  },
+  {
+    key: 'subordinate_jtf',
+    label: 'Subordinate Joint Task Force',
+    short: 'Sub-JTF',
+    plans: 'A discrete operation within the parent JTF’s joint operations area',
+    issuesTo: 'assigned forces',
+  },
+  {
+    key: 'component',
+    label: 'Functional or Service Component',
+    short: 'Component',
+    plans: 'Component operations supporting the joint force commander',
+    issuesTo: 'subordinate units',
+  },
+] as const;

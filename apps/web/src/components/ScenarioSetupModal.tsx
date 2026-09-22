@@ -1,7 +1,7 @@
 'use client';
 
-import type { CombatantCommand } from '@jpe/shared';
-import { COMBATANT_COMMANDS, combatantCommand } from '@jpe/shared';
+import { describeChain, echelon as echelonDef } from '@jpe/shared';
+import { useEchelon } from '@/context/EchelonContext';
 import React, { useState } from 'react';
 import { 
   X, 
@@ -9,7 +9,8 @@ import {
   FileText, 
   Check, 
   Shield, 
-  FolderPlus, 
+  FolderPlus,
+  Lock, 
   Trash2,
   Loader2, 
   Info
@@ -18,6 +19,8 @@ import { OperationalScenario, UploadedDocument } from '@/types/scenario';
 import { ingestFile, statusLabel, acceptAttribute, IngestedDocument } from '@/lib/ingest';
 
 interface ScenarioSetupModalProps {
+  /** Opens the dialog that owns the command chain. */
+  onOpenEchelonModal: () => void;
   isOpen: boolean;
   onClose: () => void;
   currentScenario: OperationalScenario;
@@ -25,11 +28,13 @@ interface ScenarioSetupModalProps {
 }
 
 export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
-  isOpen,
+  
+  onOpenEchelonModal,isOpen,
   onClose,
   currentScenario,
   onSave,
 }) => {
+  const { echelon, locked } = useEchelon();
   const [scenario, setScenario] = useState<OperationalScenario>({ ...currentScenario });
   const [dragOver, setDragOver] = useState(false);
   const [ingesting, setIngesting] = useState<string>('');
@@ -118,18 +123,37 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
               <Shield className="w-3.5 h-3.5" /> 1. Joint Task Force Identification
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              {/*
+                * The headquarters is shown, not edited.
+                *
+                * It is fixed per installation — a J5 cell belongs to one
+                * command and does not become another between operations — so
+                * it is set once in the echelon dialog and read here. Editing it
+                * alongside the operation name would invite changing it per
+                * scenario, and specified/implied task classification is defined
+                * relative to it.
+                */}
+              <div className="md:col-span-2">
                 <label className="block text-slate-300 font-medium mb-1">
-                  Joint Task Force Name / Designation
+                  Planning Headquarters
                 </label>
-                <input
-                  type="text"
-                  value={scenario.jtfName}
-                  onChange={e => setScenario({ ...scenario, jtfName: e.target.value })}
-                  placeholder="e.g., JTF-Horn of Africa, JTF-Bravo, JTF-101"
-                  className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-joint-500 transition"
-                  required
-                />
+                <div className="w-full bg-slate-950/60 border border-slate-800 rounded-lg px-3 py-2 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-white text-sm truncate">{describeChain(echelon)}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">
+                      {locked ? 'Locked for this installation.' : 'Not yet confirmed.'} Issues orders
+                      to {echelonDef(echelon.level)?.issuesTo}.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onOpenEchelonModal}
+                    className="shrink-0 px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-900 hover:border-joint-600 text-slate-200 text-[11px] font-semibold transition flex items-center gap-1.5"
+                  >
+                    {locked ? <Lock className="w-3 h-3" /> : <Shield className="w-3 h-3" />}
+                    Change
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -144,44 +168,6 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
                   className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-joint-500 transition"
                   required
                 />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  Higher Headquarters (Combatant Command)
-                </label>
-                {/*
-                  * A list, not a text box. A JTF is established by a combatant
-                  * command, the set is fixed at eleven, and free text let a
-                  * service component or a misspelling reach every downstream
-                  * staff product.
-                  */}
-                <select
-                  value={scenario.higherHq}
-                  onChange={e =>
-                    setScenario({ ...scenario, higherHq: e.target.value as CombatantCommand })
-                  }
-                  className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-joint-500 transition"
-                  required
-                >
-                  <optgroup label="Geographic">
-                    {COMBATANT_COMMANDS.filter(c => c.type === 'geographic').map(c => (
-                      <option key={c.key} value={c.key}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Functional">
-                    {COMBATANT_COMMANDS.filter(c => c.type === 'functional').map(c => (
-                      <option key={c.key} value={c.key}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-                <p className="text-[10px] text-slate-500 mt-1">
-                  {combatantCommand(scenario.higherHq)?.aor}
-                </p>
               </div>
 
               <div>

@@ -1,4 +1,3 @@
-import type { CombatantCommand } from '@jpe/shared';
 import type { IngestStatus } from '@/lib/ingest';
 
 /**
@@ -25,15 +24,18 @@ export interface UploadedDocument {
   images?: string[];
 }
 
+/**
+ * What is being planned, as distinct from who is planning it.
+ *
+ * The headquarters, its level and the command that established it are fixed
+ * per installation and live in the planning echelon, not here — see
+ * `@/lib/echelon`. A scenario changes between operations; the staff does not.
+ */
 export interface OperationalScenario {
-  jtfName: string;
   operationName: string;
   commandingOfficer: string;
   officerRole: string;
   serviceBranch: string;
-  operationalEchelon: string;
-  /** Constrained to the combatant commands; see COMBATANT_COMMANDS. */
-  higherHq: CombatantCommand;
   aorRegion: string;
   classification: 'UNCLASSIFIED' | 'CUI';
   uploadedDocuments: UploadedDocument[];

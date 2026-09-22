@@ -1,3 +1,5 @@
+import type { PlanningEchelon } from '@jpe/shared';
+import { echelon as echelonDef } from '@jpe/shared';
 import { OperationalScenario } from '@/types/scenario';
 
 /** Placeholder for anything the staff has not recorded yet. */
@@ -65,8 +67,16 @@ export function blocks(...parts: (string | null | undefined)[]): string {
  * Wraps a product in its classification marking. Staff products carry the
  * marking top and bottom, so text pasted elsewhere keeps it.
  */
+/** "Combined Joint Task Force" — the level, spelled out for a product header. */
+function echelonLabel(e: PlanningEchelon): string {
+  const def = echelonDef(e.level);
+  const base = def?.label ?? e.level;
+  return e.multinational && e.level !== 'ccmd' ? `Combined ${base}` : base;
+}
+
 export function classified(
   scenario: OperationalScenario,
+  echelon: PlanningEchelon,
   title: string,
   doctrineRef: string,
   body: string
@@ -78,7 +88,8 @@ export function classified(
     h1(title),
     '',
     kv('Operation', scenario.operationName),
-    kv('Headquarters', `${scenario.jtfName} (${scenario.higherHq})`),
+    kv('Headquarters', `${echelon.designation} (${echelon.establishedBy})`),
+    kv('Echelon', echelonLabel(echelon)),
     kv('Operational area', scenario.aorRegion),
     kv('Prepared by', `${scenario.commandingOfficer}, ${scenario.officerRole}`),
     kv('Doctrinal reference', doctrineRef),

@@ -1,4 +1,4 @@
-import type { CombatantCommand } from '@jpe/shared';
+import type { PlanningEchelon } from '@jpe/shared';
 /**
  * Planning assistant contract.
  *
@@ -78,10 +78,15 @@ export interface CoaCritique {
 
 /** Operational context passed to every call, so output is situated. */
 export interface AssistantContext {
-  jtfName: string;
+  /**
+   * The headquarters being planned for.
+   *
+   * Carried whole rather than as a name and a higher command, because the
+   * level is what decides whether a task is specified or implied, and a model
+   * given only two designations has to guess at the relationship between them.
+   */
+  echelon: PlanningEchelon;
   operationName: string;
-  /** A combatant command, never free text — see COMBATANT_COMMANDS. */
-  higherHq: CombatantCommand;
   aorRegion: string;
   classification: string;
   missionStatement?: string;

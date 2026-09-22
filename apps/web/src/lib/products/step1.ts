@@ -7,10 +7,11 @@ export const STEP1_PRODUCTS: PlanningProduct[] = [
     phaseId: 1,
     label: 'Warning Order (WARNORD)',
     doctrineRef: 'JP 5-0, Ch IV — Planning Initiation',
-    build: ({ scenario, planningInit: s }) => {
+    build: ({ scenario, echelon, planningInit: s }) => {
       const w = s.warnord;
       return classified(
         scenario,
+        echelon,
         'WARNING ORDER',
         'JP 5-0, Ch IV — Planning Initiation',
         blocks(
@@ -52,10 +53,11 @@ export const STEP1_PRODUCTS: PlanningProduct[] = [
     phaseId: 1,
     label: "Commander's Initial Planning Guidance",
     doctrineRef: 'JP 5-0, Ch IV',
-    build: ({ scenario, planningInit: s }) => {
+    build: ({ scenario, echelon, planningInit: s }) => {
       const g = s.commanderGuidance;
       return classified(
         scenario,
+        echelon,
         "COMMANDER'S INITIAL PLANNING GUIDANCE",
         'JP 5-0, Ch IV',
         blocks(
@@ -74,10 +76,11 @@ export const STEP1_PRODUCTS: PlanningProduct[] = [
     phaseId: 1,
     label: 'Planning Organization & Staff Actions',
     doctrineRef: 'JP 5-0, Ch IV',
-    build: ({ scenario, planningInit: s }) => {
+    build: ({ scenario, echelon, planningInit: s }) => {
       const done = s.staffActions.filter(a => a.completed).length;
       return classified(
         scenario,
+        echelon,
         'PLANNING ORGANIZATION AND INITIAL STAFF ACTIONS',
         'JP 5-0, Ch IV',
         blocks(
@@ -116,10 +119,11 @@ export const STEP1_PRODUCTS: PlanningProduct[] = [
     phaseId: 1,
     label: '1/3–2/3 Time Allocation',
     doctrineRef: 'JP 5-0, Ch IV',
-    build: ({ scenario, planningInit: s }) => {
+    build: ({ scenario, echelon, planningInit: s }) => {
       const t = s.timeAllocation;
       return classified(
         scenario,
+        echelon,
         'PLANNING TIME ALLOCATION',
         'JP 5-0, Ch IV',
         blocks(

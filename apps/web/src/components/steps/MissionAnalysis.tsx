@@ -1,3 +1,4 @@
+import type { PlanningEchelon } from '@jpe/shared';
 'use client';
 
 import React, { useState } from 'react';
@@ -49,7 +50,8 @@ import {
 // =============================================================================
 
 export function createDefaultMissionAnalysisState(
-  scenario: OperationalScenario
+  scenario: OperationalScenario,
+  echelon: PlanningEchelon
 ): MissionAnalysisState {
   return {
     tasks: [],
@@ -58,7 +60,7 @@ export function createDefaultMissionAnalysisState(
     ccirs: [],
     eefis: [],
     restatedMission: {
-      who: scenario.jtfName,
+      who: echelon.designation,
       what: '',
       when: 'When directed',
       where: scenario.aorRegion,
@@ -612,7 +614,7 @@ const JipoeEstimatesTab: React.FC<{
 export const MissionAnalysis: React.FC<MissionAnalysisProps> = ({
   onOpenExportModal,
 }) => {
-  const { scenario, missionAnalysis: state, setMissionAnalysis: onStateChange } = usePlanning();
+  const { scenario, echelon, missionAnalysis: state, setMissionAnalysis: onStateChange } = usePlanning();
   const [activeTab, setActiveTab] = useState<TabId>('tasks');
   const [aiOpen, setAiOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);

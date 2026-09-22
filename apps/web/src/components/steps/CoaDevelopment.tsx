@@ -1,3 +1,4 @@
+import type { PlanningEchelon } from '@jpe/shared';
 'use client';
 
 import React, { useMemo, useState } from 'react';
@@ -100,14 +101,18 @@ function emptyValidity(): Record<CoaValidityKey, { status: 'untested'; rationale
   };
 }
 
-export function createCoa(index: number, scenario: OperationalScenario): CourseOfAction {
+export function createCoa(
+  index: number,
+  scenario: OperationalScenario,
+  echelon: PlanningEchelon
+): CourseOfAction {
   return {
     id: `coa-${Date.now()}-${index}`,
     designator: COA_DESIGNATORS[index] || `COA ${index + 1}`,
     name: '',
     narrative: '',
     sketchNotes: '',
-    statement: { ...emptyStatement(), who: scenario.jtfName, where: scenario.aorRegion },
+    statement: { ...emptyStatement(), who: echelon.designation, where: scenario.aorRegion },
     conops: { ...emptyConops(), operationalArea: scenario.aorRegion },
     distinguishability: {
       mainEffort: '',
@@ -129,11 +134,12 @@ export function createCoa(index: number, scenario: OperationalScenario): CourseO
 }
 
 export function createDefaultCoaDevelopmentState(
-  scenario: OperationalScenario
+  scenario: OperationalScenario,
+  echelon: PlanningEchelon
 ): CoaDevelopmentState {
   // JP 5-0: "Many staffs find they have time and resources to develop only two or
   // three distinct COAs per operational approach." Seed two.
-  const coas = [createCoa(0, scenario), createCoa(1, scenario)];
+  const coas = [createCoa(0, scenario, echelon), createCoa(1, scenario, echelon)];
 
   return {
     technique: 'sequential',
@@ -533,6 +539,7 @@ const CoaStatementsTab: React.FC<{
   activeCoaId: string;
   setActiveCoaId: (id: string) => void;
 }> = ({ scenario, state, onChange, activeCoaId, setActiveCoaId }) => {
+  const { echelon } = usePlanning();
   const coa = state.coas.find(c => c.id === activeCoaId);
 
   const updateCoa = (id: string, updates: Partial<CourseOfAction>) => {
@@ -540,7 +547,7 @@ const CoaStatementsTab: React.FC<{
   };
 
   const addCoa = () => {
-    const next = createCoa(state.coas.length, scenario);
+    const next = createCoa(state.coas.length, scenario, echelon);
     onChange({
       ...state,
       coas: [...state.coas, next],
@@ -1651,7 +1658,7 @@ const BriefTab: React.FC<{
 export const CoaDevelopment: React.FC<CoaDevelopmentProps> = ({
   onOpenExportModal,
 }) => {
-  const { scenario, coaDevelopment: state, setCoaDevelopment: onStateChange } = usePlanning();
+  const { scenario, echelon, coaDevelopment: state, setCoaDevelopment: onStateChange } = usePlanning();
   const [activeTab, setActiveTab] = useState<TabId>('inputs');
   const [aiOpen, setAiOpen] = useState(false);
   const [aiMode, setAiMode] = useState<'draft' | 'critique'>('draft');
@@ -1768,7 +1775,7 @@ export const CoaDevelopment: React.FC<CoaDevelopmentProps> = ({
         onClose={() => setAiOpen(false)}
         onOpenSettings={() => { setAiOpen(false); setSettingsOpen(true); }}
         onAcceptDraft={(d: DraftedCoa) => {
-          const next = createCoa(state.coas.length, scenario);
+          const next = createCoa(state.coas.length, scenario, echelon);
           onStateChange({
             ...state,
             coas: [

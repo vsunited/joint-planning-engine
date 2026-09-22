@@ -4,7 +4,8 @@ import {
   CONOPS_ELEMENTS,
   COA_DISTINGUISHABILITY_FACTORS,
   JOINT_FUNCTIONS,
-  combatantCommandLabel,
+  describeChain,
+  echelon as echelonDef,
 } from '@jpe/shared';
 import { AssistantContext } from './types';
 
@@ -62,10 +63,21 @@ export function jointFunctions(): string {
 export function contextBlock(ctx: AssistantContext): string {
   const lines: string[] = [
     `  Classification of this planning effort: ${ctx.classification}`,
-    `  Joint task force: ${ctx.jtfName}`,
+    `  You are planning for ${describeChain(ctx.echelon)}.`,
     `  Operation: ${ctx.operationName}`,
-    `  Higher headquarters: ${ctx.higherHq} (${combatantCommandLabel(ctx.higherHq)})`,
     `  Operational area: ${ctx.aorRegion}`,
+    `  Orders produced here are issued to ${echelonDef(ctx.echelon.level)?.issuesTo}.`,
+    /*
+     * The rule that makes echelon matter. A task is specified only when the
+     * establishing authority stated it to this headquarters; anything this
+     * headquarters works out for itself is implied. Without saying so the
+     * model classifies against whatever level the source document is written
+     * at, which is usually one above.
+     */
+    `  A task is SPECIFIED only if ${ctx.echelon.establishedBy} stated it to` +
+      ` ${ctx.echelon.designation} in its order. A task ${ctx.echelon.designation} must perform` +
+      ` but which is not stated is IMPLIED. Do not classify a task as specified because it` +
+      ` appears in a document written for a different headquarters.`,
   ];
   /*
    * Uploaded orders are reused across commands, and a template that still says
@@ -74,8 +86,9 @@ export function contextBlock(ctx: AssistantContext): string {
    * above, not whatever appears in the source text.
    */
   lines.push(
-    `  The higher headquarters above is established. If a source document names a` +
-      ` different combatant command, keep ${ctx.higherHq} and do not substitute it.`
+    `  The chain above is established. If a source document names a different command or` +
+      ` headquarters, keep ${ctx.echelon.designation} under ${ctx.echelon.establishedBy} and do` +
+      ` not substitute it.`
   );
   if (ctx.missionStatement) lines.push(`  Restated mission: ${ctx.missionStatement}`);
   if (ctx.commandersIntent) lines.push(`  Commander's intent: ${ctx.commandersIntent}`);

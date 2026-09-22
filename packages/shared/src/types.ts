@@ -1,6 +1,7 @@
 import { JPP_PHASES, JOINT_FUNCTIONS, USER_ROLES, CLASSIFICATION_LEVELS,
   COMBATANT_COMMANDS,
   NON_CCMD_PLANNING_AUTHORITIES,
+  COMMAND_ECHELONS,
 } from './constants';
 
 export type JppPhaseKey = typeof JPP_PHASES[number]['key'];
@@ -16,6 +17,33 @@ export type ClassificationLevel = typeof CLASSIFICATION_LEVELS[number];
  * into a staff product and being noticed by a reviewer.
  */
 export type CombatantCommand = typeof COMBATANT_COMMANDS[number]['key'];
+
+export type EchelonLevel = typeof COMMAND_ECHELONS[number]['key'];
+
+/**
+ * Who this installation plans as.
+ *
+ * Fixed per installation rather than per scenario: a J5 cell belongs to one
+ * headquarters and does not become a different one between operations. It is
+ * set once, locked, and every module reads it rather than inferring a level
+ * from whatever document happens to be open.
+ */
+export interface PlanningEchelon {
+  level: EchelonLevel;
+  /** This headquarters, as it is written in an order — e.g. "CJTF-SEA". */
+  designation: string;
+  /** The combatant command at the top of the chain. */
+  establishedBy: CombatantCommand;
+  /**
+   * Whether this is a combined (multinational) headquarters.
+   *
+   * The C in CJTF. It changes who the staff coordinates with and how orders
+   * are released, so it is recorded rather than inferred from the name.
+   */
+  multinational: boolean;
+  /** Set when the planner confirms the chain; absent while still editable. */
+  lockedAt?: string;
+}
 
 /** Anything that can appear as the source of a planning trigger. */
 export type PlanningAuthority =

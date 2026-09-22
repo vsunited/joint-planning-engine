@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { X, Cpu, Loader2, Check, AlertTriangle, Upload, Settings2, FileText } from 'lucide-react';
 import { AssistantError, ExtractedTask } from '@jpe/ai';
-import { detectCombatantCommands } from '@jpe/shared';
+import { detectAddressee, detectCombatantCommands } from '@jpe/shared';
 import { assistant } from '@/lib/assistant';
 import { usePlanning } from '@/context/PlanningContext';
 import { MissionTask } from '@/types/planning';
@@ -28,7 +28,7 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
   onAccept,
   onOpenSettings,
 }) => {
-  const { scenario, missionAnalysis } = usePlanning();
+  const { scenario, echelon, missionAnalysis } = usePlanning();
   const [orderText, setOrderText] = useState('');
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
@@ -49,15 +49,34 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
    * the sort of thing a planner should find out now rather than at the brief.
    */
   const checkHigherHq = (text: string, source: string) => {
-    const others = detectCombatantCommands(text).filter(c => c !== scenario.higherHq);
-    if (!others.length) {
+    const notes: string[] = [];
+
+    const others = detectCombatantCommands(text).filter(c => c !== echelon.establishedBy);
+    if (others.length) {
+      notes.push(
+        `names ${others.join(' and ')}, but this effort is under ${echelon.establishedBy}`
+      );
+    }
+
+    /*
+     * Who the order is addressed to matters as much as which command issued
+     * it. An order written for a different headquarters carries tasks that are
+     * specified for them and merely implied — or irrelevant — here, so
+     * extracting it unremarked would misclassify the whole list.
+     */
+    const addressee = detectAddressee(text);
+    if (addressee && addressee !== echelon.designation.toUpperCase()) {
+      notes.push(`is addressed to ${addressee}, not ${echelon.designation}`);
+    }
+
+    if (!notes.length) {
       setHqMismatch('');
       return;
     }
     setHqMismatch(
-      `${source} names ${others.join(' and ')}, but this effort is under ${scenario.higherHq}. ` +
-        `Tasks will be extracted under ${scenario.higherHq}. If the document is right, change the ` +
-        `higher headquarters in scenario setup.`
+      `${source} ${notes.join(', and ')}. Tasks will still be extracted for ` +
+        `${echelon.designation}, and classified against what ${echelon.establishedBy} ordered it ` +
+        `to do. Change the planning headquarters if the document is right.`
     );
   };
 
@@ -126,9 +145,8 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
   };
 
   const ctx = () => ({
-    jtfName: scenario.jtfName,
+    echelon,
     operationName: scenario.operationName,
-    higherHq: scenario.higherHq,
     aorRegion: scenario.aorRegion,
     classification: scenario.classification,
     missionStatement: missionAnalysis.restatedMission.fullStatement,

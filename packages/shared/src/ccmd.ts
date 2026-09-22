@@ -71,3 +71,49 @@ export function detectCombatantCommands(text: string): CombatantCommand[] {
 
   return Array.from(found);
 }
+
+// ---------------------------------------------------------------- echelon ---
+
+import { COMMAND_ECHELONS } from './constants';
+import type { EchelonLevel, PlanningEchelon } from './types';
+
+export function echelon(level: EchelonLevel) {
+  return COMMAND_ECHELONS.find(e => e.key === level);
+}
+
+/**
+ * The command chain as a sentence, for prompts and for the interface.
+ *
+ * One phrasing used everywhere, so what the planner reads on screen and what
+ * the model is told cannot drift apart.
+ */
+export function describeChain(e: PlanningEchelon): string {
+  const def = echelon(e.level);
+  const kind = e.multinational && e.level !== 'ccmd' ? `combined ${def?.label.toLowerCase()}` : def?.label.toLowerCase();
+  return e.level === 'ccmd'
+    ? `${e.designation}, a ${def?.label.toLowerCase()}`
+    : `${e.designation}, a ${kind} established by ${e.establishedBy}`;
+}
+
+/**
+ * Headquarters an order is addressed to.
+ *
+ * Order headers are formulaic — "USINDOPACOM TO COMMANDER, CJTF-SEA" — so this
+ * is a pattern match rather than a model call: faster, free, and it cannot
+ * hallucinate a headquarters that is not written on the page.
+ */
+export function detectAddressee(text: string): string | null {
+  if (!text) return null;
+  const patterns = [
+    /\bTO\s*:?\s*(?:COMMANDER\s*,?\s*)?([A-Z0-9][A-Z0-9\-\s]{2,40}?)(?:\n|\/|$)/,
+    /\bFOR\s*:?\s*(?:COMMANDER\s*,?\s*)?([A-Z0-9][A-Z0-9\-\s]{2,40}?)(?:\n|\/|$)/,
+  ];
+  for (const re of patterns) {
+    const m = text.toUpperCase().match(re);
+    if (m?.[1]) {
+      const hit = m[1].trim().replace(/\s+/g, ' ');
+      if (hit.length >= 3) return hit;
+    }
+  }
+  return null;
+}

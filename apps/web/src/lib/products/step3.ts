@@ -7,9 +7,10 @@ export const STEP3_PRODUCTS: PlanningProduct[] = [
     phaseId: 3,
     label: 'COA Statements & Sketches',
     doctrineRef: 'JP 5-0, IV-37',
-    build: ({ scenario, coaDevelopment: s }) =>
+    build: ({ scenario, echelon, coaDevelopment: s }) =>
       classified(
         scenario,
+        echelon,
         'COURSE OF ACTION STATEMENTS',
         'JP 5-0, IV-37',
         s.coas.length
@@ -40,9 +41,10 @@ export const STEP3_PRODUCTS: PlanningProduct[] = [
     phaseId: 3,
     label: 'Initial CONOPS (13 elements)',
     doctrineRef: 'JP 5-0, IV-30',
-    build: ({ scenario, coaDevelopment: s }) =>
+    build: ({ scenario, echelon, coaDevelopment: s }) =>
       classified(
         scenario,
+        echelon,
         'INITIAL CONCEPT OF OPERATIONS',
         'JP 5-0, IV-30',
         s.coas.length
@@ -79,9 +81,10 @@ export const STEP3_PRODUCTS: PlanningProduct[] = [
     phaseId: 3,
     label: 'COA Validity Test Results',
     doctrineRef: 'JP 5-0, IV-37 to IV-39',
-    build: ({ scenario, coaDevelopment: s }) =>
+    build: ({ scenario, echelon, coaDevelopment: s }) =>
       classified(
         scenario,
+        echelon,
         'COA VALIDITY TEST',
         'JP 5-0, IV-37 to IV-39',
         blocks(
@@ -121,9 +124,10 @@ export const STEP3_PRODUCTS: PlanningProduct[] = [
     phaseId: 3,
     label: 'COA Development Brief',
     doctrineRef: 'JP 5-0, Figure IV-11',
-    build: ({ scenario, coaDevelopment: s }) =>
+    build: ({ scenario, echelon, coaDevelopment: s }) =>
       classified(
         scenario,
+        echelon,
         'COA DEVELOPMENT BRIEFING',
         'JP 5-0, Figure IV-11',
         blocks(
