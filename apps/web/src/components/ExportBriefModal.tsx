@@ -28,7 +28,7 @@ export const ExportBriefModal: React.FC<ExportBriefModalProps> = ({
   activePhaseId,
 }) => {
   const state = usePlanning();
-  const { scenario } = state;
+  const { scenario, echelon } = state;
 
   const products = useMemo(() => productsForPhase(activePhaseId), [activePhaseId]);
   const [selectedId, setSelectedId] = useState<string>('');
@@ -120,7 +120,7 @@ export const ExportBriefModal: React.FC<ExportBriefModalProps> = ({
             OPERATION <span className="text-emerald-400 font-bold ml-1">{scenario.operationName.toUpperCase()}</span>
           </span>
           <span className="text-slate-500">
-            HQ <span className="text-slate-200 ml-1">{scenario.jtfName}</span>
+            HQ <span className="text-slate-200 ml-1">{echelon.designation}</span>
           </span>
           <span className="text-slate-500">
             CLASSIFICATION <span className="text-emerald-400 font-bold ml-1">{scenario.classification}</span>

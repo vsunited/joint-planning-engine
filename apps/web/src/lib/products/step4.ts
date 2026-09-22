@@ -10,9 +10,10 @@ export const STEP4_PRODUCTS: PlanningProduct[] = [
     phaseId: 4,
     label: 'Wargame Record',
     doctrineRef: 'JP 5-0, IV-48',
-    build: ({ scenario, coaAnalysis: s, coaDevelopment: d }) =>
+    build: ({ scenario, echelon, coaAnalysis: s, coaDevelopment: d }) =>
       classified(
         scenario,
+        echelon,
         'WARGAME RECORD',
         'JP 5-0, IV-48',
         blocks(
@@ -77,7 +78,7 @@ export const STEP4_PRODUCTS: PlanningProduct[] = [
     phaseId: 4,
     label: 'Synchronization Matrix',
     doctrineRef: 'JP 5-0, IV-49',
-    build: ({ scenario, coaAnalysis: s, coaDevelopment: d }) => {
+    build: ({ scenario, echelon, coaAnalysis: s, coaDevelopment: d }) => {
       const functions = Array.from(new Set(s.syncMatrix.map(m => m.jointFunction)));
       const body = d.coas
         .map(coa => {
@@ -101,6 +102,7 @@ export const STEP4_PRODUCTS: PlanningProduct[] = [
         .join('\n\n');
       return classified(
         scenario,
+        echelon,
         'SYNCHRONIZATION MATRIX',
         'JP 5-0, IV-49',
         body
@@ -112,9 +114,10 @@ export const STEP4_PRODUCTS: PlanningProduct[] = [
     phaseId: 4,
     label: 'Decision Support Template',
     doctrineRef: 'JP 5-0, IV-50',
-    build: ({ scenario, coaAnalysis: s, coaDevelopment: d }) =>
+    build: ({ scenario, echelon, coaAnalysis: s, coaDevelopment: d }) =>
       classified(
         scenario,
+        echelon,
         'DECISION SUPPORT TEMPLATE / MATRIX',
         'JP 5-0, IV-50',
         blocks(
@@ -166,9 +169,10 @@ export const STEP4_PRODUCTS: PlanningProduct[] = [
     phaseId: 4,
     label: 'Branches & Sequels',
     doctrineRef: 'JP 5-0, IV-44',
-    build: ({ scenario, coaAnalysis: s, coaDevelopment: d }) =>
+    build: ({ scenario, echelon, coaAnalysis: s, coaDevelopment: d }) =>
       classified(
         scenario,
+        echelon,
         'BRANCHES AND SEQUELS',
         'JP 5-0, IV-44',
         table(
@@ -188,9 +192,10 @@ export const STEP4_PRODUCTS: PlanningProduct[] = [
     phaseId: 4,
     label: 'Strengths, Weaknesses & Risk',
     doctrineRef: 'JP 5-0, IV-50 to IV-51',
-    build: ({ scenario, coaAnalysis: s, coaDevelopment: d }) =>
+    build: ({ scenario, echelon, coaAnalysis: s, coaDevelopment: d }) =>
       classified(
         scenario,
+        echelon,
         'WARGAME RESULTS BY COA',
         'JP 5-0, IV-50 to IV-51',
         blocks(

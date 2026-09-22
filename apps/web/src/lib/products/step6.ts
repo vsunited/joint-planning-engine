@@ -8,9 +8,10 @@ export const STEP6_PRODUCTS: PlanningProduct[] = [
     phaseId: 6,
     label: 'COA Decision Brief',
     doctrineRef: 'JP 5-0, Figure IV-16',
-    build: ({ scenario, coaApproval: s }) =>
+    build: ({ scenario, echelon, coaApproval: s }) =>
       classified(
         scenario,
+        echelon,
         'COA DECISION BRIEFING',
         'JP 5-0, Figure IV-16',
         blocks(
@@ -36,12 +37,13 @@ export const STEP6_PRODUCTS: PlanningProduct[] = [
     phaseId: 6,
     label: 'Decision Statement',
     doctrineRef: 'JP 5-0, IV-56',
-    build: ({ scenario, coaApproval: s, coaDevelopment: d }) => {
+    build: ({ scenario, echelon, coaApproval: s, coaDevelopment: d }) => {
       const selected = d.coas.filter(c => s.decision.selectedCoaIds.includes(c.id));
       const optLabel =
         COMMANDER_DECISION_OPTIONS.find(o => o.key === s.decision.type)?.label || 'Undecided';
       return classified(
         scenario,
+        echelon,
         'COMMANDER’S DECISION STATEMENT',
         'JP 5-0, IV-56',
         blocks(
@@ -67,9 +69,10 @@ export const STEP6_PRODUCTS: PlanningProduct[] = [
     phaseId: 6,
     label: "Commander's Estimate",
     doctrineRef: 'JP 5-0, IV-57',
-    build: ({ scenario, coaApproval: s }) =>
+    build: ({ scenario, echelon, coaApproval: s }) =>
       classified(
         scenario,
+        echelon,
         "COMMANDER’S ESTIMATE",
         'JP 5-0, IV-57 / CJCSM 3130.03',
         blocks(

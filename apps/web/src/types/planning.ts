@@ -1,3 +1,4 @@
+import type { PlanningAuthority } from '@jpe/shared';
 // =============================================================================
 // Step 1: Planning Initiation — Type Definitions
 // JP 5-0, Chapter IV — Joint Planning Process
@@ -6,7 +7,15 @@
 /** Planning trigger type — what initiated the planning process */
 export interface PlanningTrigger {
   type: 'WARNORD' | 'PLANORD' | 'ALERTORD' | 'CCDR_INITIATIVE';
-  source: string;
+  /**
+   * Who issued the directive.
+   *
+   * Usually the higher headquarters, but not always: an ALERTORD comes from
+   * SecDef or the Chairman, and a commander's initiative comes from the
+   * command itself. Constraining this to combatant commands alone would make
+   * those two triggers unrecordable, so it admits the other authorities too.
+   */
+  source: PlanningAuthority;
   dtg: string;
   classification: string;
   summary: string;

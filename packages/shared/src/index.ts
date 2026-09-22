@@ -1,4 +1,7 @@
 export {
+  COMMAND_ECHELONS,
+  COMBATANT_COMMANDS,
+  NON_CCMD_PLANNING_AUTHORITIES,
   JPP_PHASES,
   JOINT_FUNCTIONS,
   USER_ROLES,
@@ -63,7 +66,34 @@ export {
   TPFDD_FORCE_CATEGORIES,
 } from './constants';
 
+export {
+  parseOrderHeader,
+  proposeEchelon,
+  sameHeadquarters,
+  normaliseDesignation,
+} from './order';
+
 export type {
+  OrderHeader,
+  EchelonProposal,
+  DocumentRole,
+} from './order';
+
+export {
+  echelon,
+  describeChain,
+  detectAddressee,
+  isCombatantCommand,
+  combatantCommand,
+  combatantCommandLabel,
+  detectCombatantCommands,
+} from './ccmd';
+
+export type {
+  EchelonLevel,
+  PlanningEchelon,
+  CombatantCommand,
+  PlanningAuthority,
   JppPhaseKey,
   JointFunction,
   UserRole,

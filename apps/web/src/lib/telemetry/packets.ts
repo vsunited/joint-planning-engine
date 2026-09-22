@@ -1,3 +1,4 @@
+import type { CombatantCommand, PlanningEchelon } from '@jpe/shared';
 import { TrialPacket } from './types';
 
 /**
@@ -34,21 +35,32 @@ export interface PacketDefinition {
    * the trial exists to take.
    */
   scenario: {
-    jtfName: string;
     operationName: string;
-    higherHq: string;
     aorRegion: string;
   };
+  /**
+   * The headquarters the packet is addressed to.
+   *
+   * A trial run plans as the JTF named in its own directive, so the workspace
+   * is levelled to the packet rather than to whatever the machine was last set
+   * to. Without this a participant on the tool arm could be classifying tasks
+   * against a different headquarters than the order they were handed.
+   */
+  echelon: PlanningEchelon;
 }
 
 const PACKET_A: PacketDefinition = {
   id: 'A',
   operation: 'OPERATION SENTINEL RESOLVE',
   issuer: 'USAFRICOM to JTF-Horn of Africa',
+  echelon: {
+    level: 'jtf',
+    designation: 'JTF-Horn of Africa',
+    establishedBy: 'USAFRICOM',
+    multinational: false,
+  },
   scenario: {
-    jtfName: 'JTF-Horn of Africa',
     operationName: 'Sentinel Resolve',
-    higherHq: 'USAFRICOM',
     aorRegion: 'Bab-el-Mandeb & Southern Red Sea',
   },
   body: [
@@ -105,10 +117,14 @@ const PACKET_B: PacketDefinition = {
   id: 'B',
   operation: 'OPERATION IRON MERIDIAN',
   issuer: 'USCENTCOM to JTF-Arabian Gulf',
+  echelon: {
+    level: 'jtf',
+    designation: 'JTF-Arabian Gulf',
+    establishedBy: 'USCENTCOM',
+    multinational: false,
+  },
   scenario: {
-    jtfName: 'JTF-Arabian Gulf',
     operationName: 'Iron Meridian',
-    higherHq: 'USCENTCOM',
     aorRegion: 'Strait of Hormuz & Gulf of Oman',
   },
   body: [

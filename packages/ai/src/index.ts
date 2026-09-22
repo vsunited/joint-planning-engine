@@ -1,4 +1,6 @@
 export type {
+  FieldSpec,
+  PopulatedField,
   IPlanningAssistant,
   AssistantConfig,
   AssistantContext,

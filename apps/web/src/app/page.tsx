@@ -16,7 +16,10 @@ import { ExportBriefModal } from '@/components/ExportBriefModal';
 import { OperationalScenario } from '@/types/scenario';
 import { statusLabel } from '@/lib/ingest';
 import { PlanningProvider, PlanningState, usePlanning } from '@/context/PlanningContext';
+import type { PlanningEchelon } from '@jpe/shared';
 import { AuthGate } from '@/components/AuthGate';
+import { EchelonProvider, useEchelon } from '@/context/EchelonContext';
+import { EchelonSetupModal } from '@/components/EchelonSetupModal';
 import { TrialProvider, useTrial } from '@/context/TrialContext';
 import { TrialBar } from '@/components/TrialBar';
 import { TrialSetupModal } from '@/components/TrialSetupModal';
@@ -36,13 +39,10 @@ import {
 
 /** Default scenario used to seed a fresh planning workspace. */
 const DEFAULT_SCENARIO: OperationalScenario = {
-  jtfName: 'JTF-Horn of Africa',
   operationName: 'Sentinel Resolve',
   commandingOfficer: 'MAJ D. Hess',
   officerRole: 'Lead J5 Operational Planner',
   serviceBranch: 'Joint Staff',
-  operationalEchelon: 'Joint Task Force HQ',
-  higherHq: 'USAFRICOM',
   aorRegion: 'Bab-el-Mandeb & Western Indian Ocean',
   classification: 'UNCLASSIFIED',
   /*
@@ -60,13 +60,17 @@ const DEFAULT_SCENARIO: OperationalScenario = {
  * has to import the step components — they import `usePlanning` from it, and
  * importing their factories back would create a cycle.
  */
-function createInitialPlanningState(scenario: OperationalScenario): PlanningState {
-  const missionAnalysis = createDefaultMissionAnalysisState(scenario);
+function createInitialPlanningState(
+  scenario: OperationalScenario,
+  echelon: PlanningEchelon
+): PlanningState {
+  const missionAnalysis = createDefaultMissionAnalysisState(scenario, echelon);
   return {
     scenario,
-    planningInit: createDefaultPlanningInitState(scenario),
+    echelon,
+    planningInit: createDefaultPlanningInitState(scenario, echelon),
     missionAnalysis,
-    coaDevelopment: createDefaultCoaDevelopmentState(scenario),
+    coaDevelopment: createDefaultCoaDevelopmentState(scenario, echelon),
     coaAnalysis: createDefaultCoaAnalysisState(scenario),
     // Step 5 seeds its criteria from the criteria established in Step 2.
     coaComparison: createDefaultCoaComparisonState(scenario, missionAnalysis),
@@ -76,16 +80,29 @@ function createInitialPlanningState(scenario: OperationalScenario): PlanningStat
 }
 
 export default function HomePage() {
-  const initialState = useMemo(() => createInitialPlanningState(DEFAULT_SCENARIO), []);
-
   return (
     <AuthGate>
-      <TrialProvider>
-        <PlanningProvider initialState={initialState}>
-          <PlanningWorkspace />
-        </PlanningProvider>
-      </TrialProvider>
+      <EchelonProvider>
+        <TrialProvider>
+          <PlanningRoot />
+        </TrialProvider>
+      </EchelonProvider>
     </AuthGate>
+  );
+}
+
+/** Builds the workspace for whichever headquarters this installation plans as. */
+function PlanningRoot() {
+  const { echelon } = useEchelon();
+  const initialState = useMemo(
+    () => createInitialPlanningState(DEFAULT_SCENARIO, echelon),
+    [echelon]
+  );
+
+  return (
+    <PlanningProvider initialState={initialState}>
+      <PlanningWorkspace />
+    </PlanningProvider>
   );
 }
 
@@ -94,15 +111,44 @@ export default function HomePage() {
  * context, so this only owns which phase is showing and the modals.
  */
 function PlanningWorkspace() {
-  const { scenario, setScenario, resetPlanning } = usePlanning();
+  const { scenario, echelon, setScenario, resetPlanning } = usePlanning();
+  /*
+   * The authoritative headquarters, as distinct from the copy carried in
+   * planning state. Watching the copy could never detect a change, because the
+   * copy is what this effect updates.
+   */
+  const { echelon: liveEchelon } = useEchelon();
   const { session } = useTrial();
 
   const [selectedPhase, setSelectedPhase] = useState<number>(1);
   const [isScenarioModalOpen, setIsScenarioModalOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isTrialModalOpen, setIsTrialModalOpen] = useState<boolean>(false);
+  const [isEchelonModalOpen, setIsEchelonModalOpen] = useState<boolean>(false);
 
   const openExportModal = () => setIsExportModalOpen(true);
+
+  /*
+   * Re-level the workspace when the headquarters changes.
+   *
+   * The derived work has to go: specified and implied tasks are classified
+   * relative to this headquarters, and carrying them across a change of level
+   * would leave a plan whose classifications no longer mean what they say.
+   *
+   * What the planner put in does not. Uploaded orders, the operation name and
+   * the operational area are inputs, not conclusions — and since the level is
+   * usually confirmed *from* an uploaded directive, discarding the uploads at
+   * that moment would delete the document the planner had just used.
+   */
+  useEffect(() => {
+    const same =
+      liveEchelon.level === echelon.level &&
+      liveEchelon.designation === echelon.designation &&
+      liveEchelon.establishedBy === echelon.establishedBy &&
+      liveEchelon.multinational === echelon.multinational;
+    if (same) return;
+    resetPlanning(createInitialPlanningState(scenario, liveEchelon));
+  }, [liveEchelon, echelon, scenario, resetPlanning]);
 
   /*
    * A tool-arm session starts from a blank workspace oriented to its packet.
@@ -120,15 +166,18 @@ function PlanningWorkspace() {
     if (preparedFor.current === session.id) return;
     preparedFor.current = session.id;
     resetPlanning(
-      createInitialPlanningState({
-        ...DEFAULT_SCENARIO,
-        ...TRIAL_PACKETS[session.packet].scenario,
-        /* No planner's name on screen or in the export: the completeness
-           scoring is blind, and a name is a tell. */
-        commandingOfficer: 'Lead Planner',
-        officerRole: 'J-5 Planner',
-        uploadedDocuments: [],
-      })
+      createInitialPlanningState(
+        {
+          ...DEFAULT_SCENARIO,
+          ...TRIAL_PACKETS[session.packet].scenario,
+          /* No planner's name on screen or in the export: the completeness
+             scoring is blind, and a name is a tell. */
+          commandingOfficer: 'Lead Planner',
+          officerRole: 'J-5 Planner',
+          uploadedDocuments: [],
+        },
+        TRIAL_PACKETS[session.packet].echelon
+      )
     );
   }, [session, resetPlanning]);
 
@@ -172,6 +221,7 @@ function PlanningWorkspace() {
       {/* Military Grade Header with Joint Theme & Scenario Setup Modal Trigger */}
       <Header
         scenario={scenario}
+        echelon={echelon}
         onOpenScenarioModal={() => setIsScenarioModalOpen(true)}
       />
 
@@ -273,7 +323,7 @@ function PlanningWorkspace() {
                 <span className="text-[10px] font-mono text-slate-500">JP 3-0</span>
               </div>
               <p className="text-[11px] text-slate-400 mb-3">
-                Doctrinal capabilities integrating multi-domain actions across {scenario.jtfName}.
+                Doctrinal capabilities integrating multi-domain actions across {echelon.designation}.
               </p>
 
               <div className="space-y-1.5">
@@ -343,6 +393,13 @@ function PlanningWorkspace() {
         onClose={() => setIsScenarioModalOpen(false)}
         currentScenario={scenario}
         onSave={(updated) => setScenario(updated)}
+        onOpenEchelonModal={() => setIsEchelonModalOpen(true)}
+      />
+
+      {/* Owns the command chain; locked once confirmed. */}
+      <EchelonSetupModal
+        isOpen={isEchelonModalOpen}
+        onClose={() => setIsEchelonModalOpen(false)}
       />
 
       {/* Export Staff Brief Modal */}

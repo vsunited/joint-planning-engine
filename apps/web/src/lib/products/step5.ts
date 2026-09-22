@@ -7,7 +7,7 @@ export const STEP5_PRODUCTS: PlanningProduct[] = [
     phaseId: 5,
     label: 'COA Comparison Matrix',
     doctrineRef: 'JP 5-0, Appendix E',
-    build: ({ scenario, coaComparison: s, coaDevelopment: d, coaAnalysis: a }) => {
+    build: ({ scenario, echelon, coaComparison: s, coaDevelopment: d, coaAnalysis: a }) => {
       const discarded = new Set(
         a.results.filter(r => r.recommendation === 'discard').map(r => r.coaId)
       );
@@ -41,6 +41,7 @@ export const STEP5_PRODUCTS: PlanningProduct[] = [
 
       return classified(
         scenario,
+        echelon,
         'COA COMPARISON MATRIX',
         'JP 5-0, Appendix E',
         blocks(
@@ -98,10 +99,11 @@ export const STEP5_PRODUCTS: PlanningProduct[] = [
     phaseId: 5,
     label: 'Staff Recommendation',
     doctrineRef: 'JP 5-0, IV-51',
-    build: ({ scenario, coaComparison: s, coaDevelopment: d }) => {
+    build: ({ scenario, echelon, coaComparison: s, coaDevelopment: d }) => {
       const rec = d.coas.find(c => c.id === s.recommendation.recommendedCoaId);
       return classified(
         scenario,
+        echelon,
         'STAFF RECOMMENDATION',
         'JP 5-0, IV-51',
         blocks(

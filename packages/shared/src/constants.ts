@@ -1020,3 +1020,164 @@ export const TPFDD_FORCE_CATEGORIES = [
   'Enabling / Early Entry',
   'Sustainment',
 ] as const;
+
+// =============================================================================
+// Combatant Commands
+// Unified Command Plan — the only valid higher headquarters for a JTF
+// =============================================================================
+
+/**
+ * The eleven combatant commands.
+ *
+ * A joint task force is established by, and reports to, a combatant command.
+ * Leaving the field as free text let a planner type anything — a service
+ * component, a numbered fleet, a misspelling — and every downstream product
+ * then carried it. The set is small, fixed and doctrinal, so it belongs in a
+ * list rather than in a text box.
+ *
+ * Both geographic and functional commands are included. A JTF's higher
+ * headquarters is usually geographic, but a special operations or
+ * transportation JTF answers to a functional command, and excluding those
+ * would force the planner straight back into free text.
+ *
+ * `aor` is the command's area of responsibility, used to prompt the planner
+ * rather than to constrain them: a JTF operates in a named joint operations
+ * area inside that AOR, not across the whole of it.
+ */
+export const COMBATANT_COMMANDS = [
+  {
+    key: 'USAFRICOM',
+    label: 'USAFRICOM — U.S. Africa Command',
+    type: 'geographic',
+    aor: 'Africa less Egypt',
+  },
+  {
+    key: 'USCENTCOM',
+    label: 'USCENTCOM — U.S. Central Command',
+    type: 'geographic',
+    aor: 'Middle East, Central and South Asia',
+  },
+  {
+    key: 'USEUCOM',
+    label: 'USEUCOM — U.S. European Command',
+    type: 'geographic',
+    aor: 'Europe, Russia, Greenland and Israel',
+  },
+  {
+    key: 'USINDOPACOM',
+    label: 'USINDOPACOM — U.S. Indo-Pacific Command',
+    type: 'geographic',
+    aor: 'Indian and Pacific Ocean areas',
+  },
+  {
+    key: 'USNORTHCOM',
+    label: 'USNORTHCOM — U.S. Northern Command',
+    type: 'geographic',
+    aor: 'North America and approaches',
+  },
+  {
+    key: 'USSOUTHCOM',
+    label: 'USSOUTHCOM — U.S. Southern Command',
+    type: 'geographic',
+    aor: 'Central and South America and the Caribbean',
+  },
+  {
+    key: 'USCYBERCOM',
+    label: 'USCYBERCOM — U.S. Cyber Command',
+    type: 'functional',
+    aor: 'Cyberspace',
+  },
+  {
+    key: 'USSOCOM',
+    label: 'USSOCOM — U.S. Special Operations Command',
+    type: 'functional',
+    aor: 'Global special operations',
+  },
+  {
+    key: 'USSPACECOM',
+    label: 'USSPACECOM — U.S. Space Command',
+    type: 'functional',
+    aor: 'Space',
+  },
+  {
+    key: 'USSTRATCOM',
+    label: 'USSTRATCOM — U.S. Strategic Command',
+    type: 'functional',
+    aor: 'Global strategic deterrence',
+  },
+  {
+    key: 'USTRANSCOM',
+    label: 'USTRANSCOM — U.S. Transportation Command',
+    type: 'functional',
+    aor: 'Global mobility and distribution',
+  },
+] as const;
+
+/**
+ * Authorities that can initiate planning without being a combatant command.
+ *
+ * The trigger's source is not always the higher headquarters. An ALERTORD
+ * comes from the Secretary of Defense or the Chairman, and a commander's
+ * initiative comes from the command itself. Constraining the source field to
+ * combatant commands alone would make those two triggers unrecordable.
+ */
+export const NON_CCMD_PLANNING_AUTHORITIES = [
+  { key: 'SECDEF', label: 'SecDef — Secretary of Defense' },
+  { key: 'CJCS', label: 'CJCS / Joint Staff' },
+  { key: 'OWN_AUTHORITY', label: 'Own authority — commander’s initiative' },
+] as const;
+
+// =============================================================================
+// Command Echelon
+// JP 1 / JP 3-33 — the level a staff is planning at
+// =============================================================================
+
+/**
+ * Echelons a joint staff can plan at.
+ *
+ * The level is not decoration. A task is *specified* when the establishing
+ * authority's order states it to this headquarters, and *implied* when this
+ * headquarters derives it. Get the echelon wrong and Step 2's task
+ * classification is wrong, not merely worded oddly — which is why this is
+ * settled once and then held fixed rather than inferred per request.
+ *
+ * `issuesTo` is who receives what this echelon produces. A JTF issues to its
+ * components, never back up to the combatant command that established it.
+ */
+export const COMMAND_ECHELONS = [
+  {
+    key: 'ccmd',
+    label: 'Combatant Command',
+    short: 'CCMD',
+    plans: 'Theater campaign plans and contingency plans',
+    issuesTo: 'subordinate joint task forces and service components',
+  },
+  {
+    key: 'subunified',
+    label: 'Subordinate Unified Command',
+    short: 'Subunified',
+    plans: 'Operations within a delegated portion of the AOR',
+    issuesTo: 'assigned components and joint task forces',
+  },
+  {
+    key: 'jtf',
+    label: 'Joint Task Force',
+    short: 'JTF',
+    plans: 'Joint operations within a joint operations area',
+    issuesTo: 'functional and service components',
+  },
+  {
+    key: 'subordinate_jtf',
+    label: 'Subordinate Joint Task Force',
+    short: 'Sub-JTF',
+    plans: 'A discrete operation within the parent JTF’s joint operations area',
+    issuesTo: 'assigned forces',
+  },
+  {
+    key: 'component',
+    label: 'Functional or Service Component',
+    short: 'Component',
+    plans: 'Component operations supporting the joint force commander',
+    issuesTo: 'subordinate units',
+  },
+] as const;

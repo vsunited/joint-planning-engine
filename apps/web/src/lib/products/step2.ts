@@ -7,10 +7,11 @@ export const STEP2_PRODUCTS: PlanningProduct[] = [
     phaseId: 2,
     label: 'Restated Mission Statement',
     doctrineRef: 'JP 5-0, Ch IV — ma-07',
-    build: ({ scenario, missionAnalysis: s }) => {
+    build: ({ scenario, echelon, missionAnalysis: s }) => {
       const m = s.restatedMission;
       return classified(
         scenario,
+        echelon,
         'RESTATED MISSION STATEMENT',
         'JP 5-0, Ch IV — ma-07',
         blocks(
@@ -36,9 +37,10 @@ export const STEP2_PRODUCTS: PlanningProduct[] = [
     phaseId: 2,
     label: 'Task Analysis',
     doctrineRef: 'JP 5-0, Ch IV — ma-06',
-    build: ({ scenario, missionAnalysis: s }) =>
+    build: ({ scenario, echelon, missionAnalysis: s }) =>
       classified(
         scenario,
+        echelon,
         'TASK ANALYSIS',
         'JP 5-0, Ch IV — ma-06',
         blocks(
@@ -70,9 +72,10 @@ export const STEP2_PRODUCTS: PlanningProduct[] = [
     phaseId: 2,
     label: 'Facts & Assumptions',
     doctrineRef: 'JP 5-0, Ch IV — ma-04',
-    build: ({ scenario, missionAnalysis: s }) =>
+    build: ({ scenario, echelon, missionAnalysis: s }) =>
       classified(
         scenario,
+        echelon,
         'FACTS AND ASSUMPTIONS',
         'JP 5-0, Ch IV — ma-04',
         blocks(
@@ -118,9 +121,10 @@ export const STEP2_PRODUCTS: PlanningProduct[] = [
     phaseId: 2,
     label: 'CCIRs & EEFIs',
     doctrineRef: 'JP 5-0, Ch IV — ma-12',
-    build: ({ scenario, missionAnalysis: s }) =>
+    build: ({ scenario, echelon, missionAnalysis: s }) =>
       classified(
         scenario,
+        echelon,
         "COMMANDER'S CRITICAL INFORMATION REQUIREMENTS",
         'JP 5-0, Ch IV — ma-12',
         blocks(
@@ -154,9 +158,10 @@ export const STEP2_PRODUCTS: PlanningProduct[] = [
     phaseId: 2,
     label: 'Mission Analysis Brief',
     doctrineRef: 'JP 5-0, Figure IV-8',
-    build: ({ scenario, missionAnalysis: s }) =>
+    build: ({ scenario, echelon, missionAnalysis: s }) =>
       classified(
         scenario,
+        echelon,
         'MISSION ANALYSIS BRIEFING',
         'JP 5-0, Figure IV-8',
         blocks(
@@ -190,9 +195,10 @@ export const STEP2_PRODUCTS: PlanningProduct[] = [
     phaseId: 2,
     label: 'Staff Estimates & JIPOE',
     doctrineRef: 'JP 5-0, Ch IV — ma-13',
-    build: ({ scenario, missionAnalysis: s }) =>
+    build: ({ scenario, echelon, missionAnalysis: s }) =>
       classified(
         scenario,
+        echelon,
         'STAFF ESTIMATES AND JIPOE',
         'JP 5-0, Ch IV — ma-13',
         blocks(

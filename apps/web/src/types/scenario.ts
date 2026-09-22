@@ -1,3 +1,4 @@
+import type { DocumentRole } from '@jpe/shared';
 import type { IngestStatus } from '@/lib/ingest';
 
 /**
@@ -22,16 +23,41 @@ export interface UploadedDocument {
   detail?: string;
   /** Page images awaiting transcription, as data URIs. */
   images?: string[];
+
+  /**
+   * What the order's own header says, read on ingest.
+   *
+   * A planner legitimately uploads plans from other commands — an analogue, an
+   * adjacent unit's order, a plan they are writing a supporting plan against.
+   * Recording who issued each document and who it was addressed to is what
+   * separates those from the one order that actually tasks this staff, instead
+   * of treating every one of them as a mismatch.
+   */
+  issuer?: string;
+  addressee?: string;
+  /** The header line the above was read from, shown to the planner. */
+  headerEvidence?: string;
+  /**
+   * Whether this is the order that tasks this staff.
+   *
+   * Exactly one document can be the directive. Only the directive can create
+   * specified tasks; everything else can inform the plan but not task it.
+   */
+  role?: DocumentRole;
 }
 
+/**
+ * What is being planned, as distinct from who is planning it.
+ *
+ * The headquarters, its level and the command that established it are fixed
+ * per installation and live in the planning echelon, not here — see
+ * `@/lib/echelon`. A scenario changes between operations; the staff does not.
+ */
 export interface OperationalScenario {
-  jtfName: string;
   operationName: string;
   commandingOfficer: string;
   officerRole: string;
   serviceBranch: string;
-  operationalEchelon: string;
-  higherHq: string;
   aorRegion: string;
   classification: 'UNCLASSIFIED' | 'CUI';
   uploadedDocuments: UploadedDocument[];

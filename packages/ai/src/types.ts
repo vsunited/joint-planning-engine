@@ -1,3 +1,4 @@
+import type { PlanningEchelon } from '@jpe/shared';
 /**
  * Planning assistant contract.
  *
@@ -75,11 +76,46 @@ export interface CoaCritique {
   overall: string;
 }
 
+/**
+ * One field the assistant is asked to draft.
+ *
+ * Described rather than named, because the model has no idea what a field
+ * called `problemFraming` is meant to contain. The guidance is what makes the
+ * difference between a reasonable draft and a paraphrase of the label.
+ */
+export interface FieldSpec {
+  key: string;
+  label: string;
+  guidance: string;
+  kind: 'text' | 'list';
+}
+
+/** A drafted field, with the passage it was drawn from. */
+export interface PopulatedField {
+  key: string;
+  value: string | string[];
+  /**
+   * A short quote from the source.
+   *
+   * The planner verifies every field before it is accepted, and verifying is
+   * far quicker against the sentence the draft came from than against the
+   * whole order. An empty string means the model inferred rather than read it,
+   * which is itself worth showing.
+   */
+  evidence: string;
+}
+
 /** Operational context passed to every call, so output is situated. */
 export interface AssistantContext {
-  jtfName: string;
+  /**
+   * The headquarters being planned for.
+   *
+   * Carried whole rather than as a name and a higher command, because the
+   * level is what decides whether a task is specified or implied, and a model
+   * given only two designations has to guess at the relationship between them.
+   */
+  echelon: PlanningEchelon;
   operationName: string;
-  higherHq: string;
   aorRegion: string;
   classification: string;
   missionStatement?: string;
@@ -139,6 +175,20 @@ export interface IPlanningAssistant {
   checkAvailability(): Promise<AvailabilityResult>;
   extractTasks(orderText: string, ctx: AssistantContext): Promise<ExtractedTask[]>;
   /** Transcribes page images from a scanned document into text. */
+  /**
+   * Drafts a set of fields from a source document.
+   *
+   * Generic on purpose: the assistant package has no business knowing what a
+   * mission analysis worksheet looks like. Callers describe the fields they
+   * want and apply the results themselves.
+   */
+  populateFields(
+    fields: FieldSpec[],
+    sourceText: string,
+    sourceIsDirective: boolean,
+    ctx: AssistantContext
+  ): Promise<PopulatedField[]>;
+
   transcribeImages(images: string[], ctx: AssistantContext): Promise<string>;
   draftCoa(guidance: string, ctx: AssistantContext): Promise<DraftedCoa>;
   critiqueCoa(coaText: string, ctx: AssistantContext): Promise<CoaCritique>;

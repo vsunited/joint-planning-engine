@@ -1,5 +1,6 @@
 import { AssistantError, ExtractedTask, DraftedCoa, CoaCritique, CritiqueVerdict } from './types';
 import { COA_VALIDITY_CRITERIA } from '@jpe/shared';
+import type { FieldSpec, PopulatedField } from './types';
 
 /**
  * Parsing and validation for model output.
@@ -195,4 +196,56 @@ export function validateCritique(data: unknown): CoaCritique {
     complete: verdict(d.complete),
     overall: str(d.overall),
   };
+}
+
+
+/**
+ * Validates a population response against the fields that were asked for.
+ *
+ * Fields the model omitted are dropped rather than invented, and fields it
+ * volunteered that nobody asked for are discarded — an 8B model will cheerfully
+ * add a key it thinks belongs, and a planner reviewing a worksheet should not
+ * have to work out which boxes were real.
+ */
+export function validatePopulation(raw: unknown, fields: FieldSpec[]): PopulatedField[] {
+  const obj = normaliseKeys((raw as Record<string, unknown>) ?? {});
+  const inner = (obj.fields ?? obj.result ?? obj) as Record<string, unknown>;
+  const src = normaliseKeys(inner ?? {});
+
+  const out: PopulatedField[] = [];
+  fields.forEach(spec => {
+    const entry = src[spec.key];
+    if (entry === undefined || entry === null) return;
+
+    /* The model may answer with a bare value or with {value, evidence}. */
+    const bag = (
+      typeof entry === 'object' && !Array.isArray(entry) ? normaliseKeys(entry as Record<string, unknown>) : { value: entry }
+    ) as Record<string, unknown>;
+
+    const rawValue = bag.value ?? entry;
+    const evidence = typeof bag.evidence === 'string' ? bag.evidence.trim() : '';
+
+    if (spec.kind === 'list') {
+      const list = (Array.isArray(rawValue) ? rawValue : String(rawValue ?? '').split(/\n+/))
+        .map(v => (typeof v === 'string' ? v : String((v as { description?: string })?.description ?? '')))
+        .map(v => v.replace(/^[-*\u2022\s]*(?:\d+[.)]\s*)?/, '').trim())
+        .filter(Boolean);
+      if (list.length) out.push({ key: spec.key, value: list, evidence });
+      return;
+    }
+
+    /*
+     * A model asked for prose will sometimes answer with an array anyway —
+     * forces allocated and command relationships both read naturally as lists.
+     * Joining on a space welds the entries into one run-on sentence
+     * ("...for strikes CDR CJTF-SEA retains OPCON..."), so they are kept as
+     * separate lines, which reads correctly both on screen and in an export.
+     */
+    const text = Array.isArray(rawValue)
+      ? rawValue.map(v => String(v ?? '').trim()).filter(Boolean).join('\n')
+      : String(rawValue ?? '').trim();
+    if (text) out.push({ key: spec.key, value: text, evidence });
+  });
+
+  return out;
 }

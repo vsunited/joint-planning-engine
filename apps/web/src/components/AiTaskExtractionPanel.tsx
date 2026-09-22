@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, Cpu, Loader2, Check, AlertTriangle, Upload, Settings2, FileText } from 'lucide-react';
 import { AssistantError, ExtractedTask } from '@jpe/ai';
+import { detectAddressee, detectCombatantCommands } from '@jpe/shared';
 import { assistant } from '@/lib/assistant';
 import { usePlanning } from '@/context/PlanningContext';
 import { MissionTask } from '@/types/planning';
@@ -27,15 +28,57 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
   onAccept,
   onOpenSettings,
 }) => {
-  const { scenario, missionAnalysis } = usePlanning();
+  const { scenario, echelon, missionAnalysis } = usePlanning();
   const [orderText, setOrderText] = useState('');
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const [results, setResults] = useState<ExtractedTask[] | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [ingestNote, setIngestNote] = useState('');
+  const [hqMismatch, setHqMismatch] = useState('');
 
   if (!isOpen) return null;
+
+  /**
+   * Compares the commands named in a document against the one planning here.
+   *
+   * Orders get reused across commands, and a PLANORD still carrying its
+   * original headquarters is the likeliest thing a planner uploads by mistake.
+   * Extraction continues under the established higher headquarters either way;
+   * this only says so out loud, because silently overriding the document is
+   * the sort of thing a planner should find out now rather than at the brief.
+   */
+  const checkHigherHq = (text: string, source: string) => {
+    const notes: string[] = [];
+
+    const others = detectCombatantCommands(text).filter(c => c !== echelon.establishedBy);
+    if (others.length) {
+      notes.push(
+        `names ${others.join(' and ')}, but this effort is under ${echelon.establishedBy}`
+      );
+    }
+
+    /*
+     * Who the order is addressed to matters as much as which command issued
+     * it. An order written for a different headquarters carries tasks that are
+     * specified for them and merely implied — or irrelevant — here, so
+     * extracting it unremarked would misclassify the whole list.
+     */
+    const addressee = detectAddressee(text);
+    if (addressee && addressee !== echelon.designation.toUpperCase()) {
+      notes.push(`is addressed to ${addressee}, not ${echelon.designation}`);
+    }
+
+    if (!notes.length) {
+      setHqMismatch('');
+      return;
+    }
+    setHqMismatch(
+      `${source} ${notes.join(', and ')}. Tasks will still be extracted for ` +
+        `${echelon.designation}, and classified against what ${echelon.establishedBy} ordered it ` +
+        `to do. Change the planning headquarters if the document is right.`
+    );
+  };
 
   /** Reads any supported format, falling back to vision for scans. */
   const readFile = async (file: File) => {
@@ -47,6 +90,7 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
 
     if (doc.status === 'parsed') {
       setOrderText(doc.text);
+      checkHigherHq(doc.text, doc.name);
       setIngestNote(`${doc.name} — ${doc.charCount.toLocaleString()} characters extracted.`);
       return;
     }
@@ -56,6 +100,7 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
       try {
         const text = await assistant.transcribeImages(doc.images, ctx());
         setOrderText(text);
+        checkHigherHq(text, doc.name);
         setIngestNote(`${doc.name} — transcribed, ${text.length.toLocaleString()} characters.`);
       } catch (err) {
         setIngestNote('');
@@ -77,6 +122,7 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
     setError('');
     if (doc.text) {
       setOrderText(doc.text);
+      checkHigherHq(doc.text, doc.name);
       setIngestNote(`${doc.name} — ${doc.charCount.toLocaleString()} characters.`);
       return;
     }
@@ -85,6 +131,7 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
       try {
         const text = await assistant.transcribeImages(doc.images, ctx());
         setOrderText(text);
+        checkHigherHq(text, doc.name);
         setIngestNote(`${doc.name} — transcribed, ${text.length.toLocaleString()} characters.`);
       } catch (err) {
         setIngestNote('');
@@ -98,9 +145,8 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
   };
 
   const ctx = () => ({
-    jtfName: scenario.jtfName,
+    echelon,
     operationName: scenario.operationName,
-    higherHq: scenario.higherHq,
     aorRegion: scenario.aorRegion,
     classification: scenario.classification,
     missionStatement: missionAnalysis.restatedMission.fullStatement,
@@ -251,6 +297,12 @@ export const AiTaskExtractionPanel: React.FC<AiTaskExtractionPanelProps> = ({
                   {orderText.length.toLocaleString()} characters. Processed locally — this text does
                   not leave your network.
                 </p>
+                {hqMismatch && (
+                  <div className="mt-2 p-2.5 rounded-lg bg-amber-950/30 border border-amber-800/60 flex items-start gap-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+                    <p className="text-[10px] text-amber-200/90 leading-relaxed">{hqMismatch}</p>
+                  </div>
+                )}
                 {ingestNote && (
                   <p className="text-[10px] font-mono text-joint-300 mt-1.5 flex items-center gap-1.5">
                     <Loader2
