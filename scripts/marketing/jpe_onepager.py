@@ -1,4 +1,19 @@
-"""Joint Planning Engine — one-page capability sheet (US Letter portrait)."""
+"""Joint Planning Engine — one-page capability sheet (US Letter portrait).
+
+Writes JPE_Capability_Sheet.pdf next to this script, so the output lands in the
+same place wherever it is run from.
+
+Needs reportlab, which is not installed system-wide here:
+
+    python3 -m venv .venv && .venv/bin/pip install reportlab
+    .venv/bin/python scripts/marketing/jpe_onepager.py
+
+Every figure on the sheet is counted from the shipping product. If a doctrinal
+constant set is added or a staff product is added, re-count before claiming a
+new number — the sheet says outright that the figures were counted, and an
+evaluator who checks one and finds it stale discounts the rest of the page.
+"""
+import os
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.colors import HexColor
 from reportlab.pdfgen import canvas
@@ -71,7 +86,8 @@ def panel(c, x, y, w, h, fill=PANEL, stroke=LINE, r=4, lw=0.7):
     c.roundRect(x, y, w, h, r, stroke=1, fill=1)
 
 
-c = canvas.Canvas('JPE_Capability_Sheet.pdf', pagesize=letter)
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'JPE_Capability_Sheet.pdf')
+c = canvas.Canvas(OUT, pagesize=letter)
 c.setTitle('Joint Planning Engine — Capability Sheet')
 c.setAuthor('Joint Planning Engine')
 c.setSubject('JP 5-0 doctrine-grounded joint planning application')
@@ -112,12 +128,12 @@ c.drawString(M, y, 'The Joint Planning Process, executed — not remembered.')
 y -= 15
 c.setFillColor(SLATE_500)
 c.setFont(MONO, 8)
-c.drawString(M, y, 'One workspace for the whole planning process — from initiation to the signed order.')
+c.drawString(M, y, 'From initiation to the signed order \u2014 with an assistant that runs on your own network.')
 
 # ===================== problem / approach (two columns) ===================
 y -= 18
 COL_W = (CW - 12) / 2
-BOX_H = 84
+BOX_H = 78
 panel(c, M, y - BOX_H, COL_W, BOX_H)
 panel(c, M + COL_W + 12, y - BOX_H, COL_W, BOX_H, fill=PANEL_HI, stroke=J_800)
 
@@ -195,13 +211,13 @@ stats = [
     ('62', 'doctrinal\nconstant sets'),
     ('7 of 7', 'JPP steps\nlive'),
     ('28', 'exportable\nstaff products'),
-    ('5 / 25', 'validity criteria\n& sub-tests'),
-    ('19', 'COA analysis\nobjectives'),
+    ('5 / 24', 'validity criteria\n& sub-tests'),
+    ('19', 'COA analysis\npurposes'),
     ('9', 'plan development\nactivities'),
 ]
 SGAP = 5
 STW = (CW - SGAP * 5) / 6
-STH = 48
+STH = 45
 sty = y - STH
 for i, (big, small) in enumerate(stats):
     sx = M + i * (STW + SGAP)
@@ -223,15 +239,17 @@ label(c, 'CAPABILITY HIGHLIGHTS', M, y)
 y -= 13
 
 caps = [
+    ('A planning assistant that never leaves your network',
+     'Drafts a COA, critiques one against the five validity criteria, and pulls specified and '
+     'implied tasks out of an uploaded order \u2014 running against a model on your own hardware, so '
+     'planning data never leaves the building. Nothing is written without the planner accepting it.'),
+    ('Reads the orders you already have',
+     'PDF, Word, PowerPoint, plain text, and photographed or scanned pages. A printed order that '
+     'cannot be copied and pasted becomes a task list sorted into specified, implied and essential '
+     '\u2014 without anyone retyping it.'),
     ('Enforced doctrinal gates',
      'A COA failing any of the five validity criteria \u2014 suitable, feasible, acceptable, '
      'distinguishable, complete \u2014 is flagged for rejection or revision before it can advance.'),
-    ('Traceability across the whole process',
-     'Criteria set in mission analysis drive Step 5 scoring. Approved COAs flow into wargaming, '
-     'the commander\u2019s decision, and the CONOPS that becomes the order.'),
-    ('Structured wargaming',
-     'Action\u2013reaction\u2013counteraction turns against the enemy MLCOA and MDCOA, with a '
-     'synchronization matrix across all seven joint functions.'),
     ('Every product leaves the tool',
      '28 staff products \u2014 WARNORD, CCIRs, sync matrix, decision statement, TPFDD and more \u2014 '
      'copy to the clipboard or download, each classification-marked.'),
@@ -267,7 +285,7 @@ value = [
 ]
 TGAP = 5
 TTW = (CW - TGAP * 3) / 4
-TTH = 50
+TTH = 45
 tty = y - TTH
 for i, (title, body) in enumerate(value):
     sx = M + i * (TTW + TGAP)
@@ -290,12 +308,12 @@ y = tty - 20
 # ============================ deployment ==================================
 DEP_H = 46
 panel(c, M, y - DEP_H, CW, DEP_H, fill=PANEL_HI, stroke=LINE)
-label(c, 'DEPLOYMENT & INTEGRATION', M + 12, y - 15, J_400, 7.2)
+label(c, 'DEPLOYMENT & THE AIR GAP', M + 12, y - 15, J_400, 7.2)
 dep = [
-    'Browser-based — no client install',
-    'Classification-aware UI (UNCLASSIFIED / CUI)',
-    'Static web deployment; no server-side data processing',
-    'Pluggable auth layer for enterprise identity',
+    'Planning, ingestion and inference make no external call',
+    'Browser-based \u2014 no client install',
+    'Inference on your own hardware; nothing sent to a commercial API',
+    'Sign-in uses Google SSO today; swappable for a disconnected network',
 ]
 dx = M + 12
 dy = y - 28
@@ -313,15 +331,17 @@ for i, item in enumerate(dep):
 y -= DEP_H + 16
 
 # ============================ status box ==================================
-SB_H = 42
+SB_H = 52
 panel(c, M, y - SB_H, CW, SB_H, fill=HexColor('#1c1401'), stroke=HexColor('#78350f'))
 c.setFillColor(AMBER)
 c.setFont(MONOB, 7)
 c.drawString(M + 12, y - 15, 'PROGRAM STATUS')
 para(c,
-     'Prototype under active development. All seven JPP steps are functional. '
-     'All demonstration scenarios are notional. Not accredited and operating under no ATO. '
-     'Not an official U.S. Department of Defense product or endorsement.',
+     'Prototype under active development. All seven JPP steps are functional, with the '
+     'local-inference assistant and document ingestion in the shipping build. The application is '
+     'instrumented for a measured evaluation of planning time and product completeness; no results '
+     'are claimed yet. All demonstration scenarios are notional. Not accredited and operating '
+     'under no ATO. Not an official U.S. Department of Defense product or endorsement.',
      M + 12, y - 26, CW - 24, size=7.1, leading=8.4, color=HexColor('#fde68a'))
 
 y -= SB_H + 18
@@ -337,4 +357,4 @@ c.drawRightString(W - M, y - 6, 'derek@blackarrowsystems.net')
 
 c.showPage()
 c.save()
-print(f'wrote JPE_Capability_Sheet.pdf — content bottom at y={y - 6:.0f}pt (margin {M})')
+print(f'wrote {OUT} — content bottom at y={y - 6:.0f}pt (margin {M})')
