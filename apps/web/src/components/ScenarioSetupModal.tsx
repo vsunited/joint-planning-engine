@@ -1,5 +1,7 @@
 'use client';
 
+import type { CombatantCommand } from '@jpe/shared';
+import { COMBATANT_COMMANDS, combatantCommand } from '@jpe/shared';
 import React, { useState } from 'react';
 import { 
   X, 
@@ -148,14 +150,38 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
                 <label className="block text-slate-300 font-medium mb-1">
                   Higher Headquarters (Combatant Command)
                 </label>
-                <input
-                  type="text"
+                {/*
+                  * A list, not a text box. A JTF is established by a combatant
+                  * command, the set is fixed at eleven, and free text let a
+                  * service component or a misspelling reach every downstream
+                  * staff product.
+                  */}
+                <select
                   value={scenario.higherHq}
-                  onChange={e => setScenario({ ...scenario, higherHq: e.target.value })}
-                  placeholder="e.g., USINDOPACOM, USEUCOM, USAFRICOM, USCENTCOM"
+                  onChange={e =>
+                    setScenario({ ...scenario, higherHq: e.target.value as CombatantCommand })
+                  }
                   className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-joint-500 transition"
                   required
-                />
+                >
+                  <optgroup label="Geographic">
+                    {COMBATANT_COMMANDS.filter(c => c.type === 'geographic').map(c => (
+                      <option key={c.key} value={c.key}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Functional">
+                    {COMBATANT_COMMANDS.filter(c => c.type === 'functional').map(c => (
+                      <option key={c.key} value={c.key}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  {combatantCommand(scenario.higherHq)?.aor}
+                </p>
               </div>
 
               <div>

@@ -4,6 +4,7 @@ import {
   CONOPS_ELEMENTS,
   COA_DISTINGUISHABILITY_FACTORS,
   JOINT_FUNCTIONS,
+  combatantCommandLabel,
 } from '@jpe/shared';
 import { AssistantContext } from './types';
 
@@ -63,9 +64,19 @@ export function contextBlock(ctx: AssistantContext): string {
     `  Classification of this planning effort: ${ctx.classification}`,
     `  Joint task force: ${ctx.jtfName}`,
     `  Operation: ${ctx.operationName}`,
-    `  Higher headquarters: ${ctx.higherHq}`,
+    `  Higher headquarters: ${ctx.higherHq} (${combatantCommandLabel(ctx.higherHq)})`,
     `  Operational area: ${ctx.aorRegion}`,
   ];
+  /*
+   * Uploaded orders are reused across commands, and a template that still says
+   * USCENTCOM will otherwise lead the model to attribute tasks to whichever
+   * command the document names. The established higher headquarters is the one
+   * above, not whatever appears in the source text.
+   */
+  lines.push(
+    `  The higher headquarters above is established. If a source document names a` +
+      ` different combatant command, keep ${ctx.higherHq} and do not substitute it.`
+  );
   if (ctx.missionStatement) lines.push(`  Restated mission: ${ctx.missionStatement}`);
   if (ctx.commandersIntent) lines.push(`  Commander's intent: ${ctx.commandersIntent}`);
   if (ctx.enemyCog) lines.push(`  Enemy centre of gravity: ${ctx.enemyCog}`);

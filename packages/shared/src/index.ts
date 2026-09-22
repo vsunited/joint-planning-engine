@@ -1,4 +1,6 @@
 export {
+  COMBATANT_COMMANDS,
+  NON_CCMD_PLANNING_AUTHORITIES,
   JPP_PHASES,
   JOINT_FUNCTIONS,
   USER_ROLES,
@@ -63,7 +65,16 @@ export {
   TPFDD_FORCE_CATEGORIES,
 } from './constants';
 
+export {
+  isCombatantCommand,
+  combatantCommand,
+  combatantCommandLabel,
+  detectCombatantCommands,
+} from './ccmd';
+
 export type {
+  CombatantCommand,
+  PlanningAuthority,
   JppPhaseKey,
   JointFunction,
   UserRole,

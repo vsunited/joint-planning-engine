@@ -1,3 +1,4 @@
+import type { CombatantCommand } from '@jpe/shared';
 import { TrialPacket } from './types';
 
 /**
@@ -36,7 +37,7 @@ export interface PacketDefinition {
   scenario: {
     jtfName: string;
     operationName: string;
-    higherHq: string;
+    higherHq: CombatantCommand;
     aorRegion: string;
   };
 }

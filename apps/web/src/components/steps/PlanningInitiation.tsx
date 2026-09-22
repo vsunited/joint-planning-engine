@@ -1,11 +1,15 @@
 'use client';
 
+import type { PlanningAuthority } from '@jpe/shared';
+
 import React, { useState, useCallback, useMemo } from 'react';
 import {
   PLANNING_TRIGGERS,
   STAFF_DIRECTORATES,
   DIRECTORATE_ROLES,
   INITIAL_STAFF_ACTIONS,
+  COMBATANT_COMMANDS,
+  NON_CCMD_PLANNING_AUTHORITIES,
 } from '@jpe/shared';
 import {
   Radio,
@@ -62,7 +66,8 @@ export function createDefaultPlanningInitState(
   return {
     trigger: {
       type: 'WARNORD',
-      source: scenario.higherHq || '',
+      // Always a combatant command now, so there is nothing to fall back to.
+      source: scenario.higherHq,
       dtg: '',
       classification: scenario.classification,
       summary: '',
@@ -287,13 +292,27 @@ const TriggerAndGuidanceTab: React.FC<{
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-mono text-slate-400 mb-1.5">Source HQ</label>
-                <input
-                  type="text"
+                <select
                   value={state.trigger.source}
-                  onChange={(e) => updateTrigger({ source: e.target.value })}
-                  placeholder={scenario.higherHq}
+                  onChange={(e) => updateTrigger({ source: e.target.value as PlanningAuthority })}
                   className="w-full bg-slate-900 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-joint-500 transition"
-                />
+                >
+                  <optgroup label="Combatant commands">
+                    {COMBATANT_COMMANDS.map((c) => (
+                      <option key={c.key} value={c.key}>
+                        {c.key}
+                        {c.key === scenario.higherHq ? '  (higher HQ)' : ''}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Other authorities">
+                    {NON_CCMD_PLANNING_AUTHORITIES.map((a) => (
+                      <option key={a.key} value={a.key}>
+                        {a.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
               </div>
               <div>
                 <label className="block text-[11px] font-mono text-slate-400 mb-1.5">Date-Time Group (DTG)</label>

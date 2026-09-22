@@ -1,3 +1,4 @@
+import type { CombatantCommand } from '@jpe/shared';
 /**
  * Planning assistant contract.
  *
@@ -79,7 +80,8 @@ export interface CoaCritique {
 export interface AssistantContext {
   jtfName: string;
   operationName: string;
-  higherHq: string;
+  /** A combatant command, never free text — see COMBATANT_COMMANDS. */
+  higherHq: CombatantCommand;
   aorRegion: string;
   classification: string;
   missionStatement?: string;

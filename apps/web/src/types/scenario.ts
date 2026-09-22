@@ -1,3 +1,4 @@
+import type { CombatantCommand } from '@jpe/shared';
 import type { IngestStatus } from '@/lib/ingest';
 
 /**
@@ -31,7 +32,8 @@ export interface OperationalScenario {
   officerRole: string;
   serviceBranch: string;
   operationalEchelon: string;
-  higherHq: string;
+  /** Constrained to the combatant commands; see COMBATANT_COMMANDS. */
+  higherHq: CombatantCommand;
   aorRegion: string;
   classification: 'UNCLASSIFIED' | 'CUI';
   uploadedDocuments: UploadedDocument[];
