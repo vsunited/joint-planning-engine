@@ -1,5 +1,6 @@
-import type { PlanningEchelon } from '@jpe/shared';
 'use client';
+
+import type { PlanningEchelon } from '@jpe/shared';
 
 import React, { useMemo, useState } from 'react';
 import {

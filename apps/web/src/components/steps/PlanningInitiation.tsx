@@ -1,6 +1,7 @@
 'use client';
 
 import type { PlanningEchelon } from '@jpe/shared';
+import { PopulateFieldsPanel } from '@/components/PopulateFieldsPanel';
 
 import type { PlanningAuthority } from '@jpe/shared';
 
@@ -25,6 +26,7 @@ import {
   ChevronUp,
   AlertTriangle,
   Shield,
+  Sparkles,
   Presentation,
   Info,
   Check,
@@ -1127,6 +1129,7 @@ export const PlanningInitiation: React.FC<PlanningInitiationProps> = ({
   onOpenExportModal,
 }) => {
   const { scenario, echelon, planningInit: state, setPlanningInit: onStateChange } = usePlanning();
+  const [populateOpen, setPopulateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('trigger');
 
   return (
@@ -1152,6 +1155,13 @@ export const PlanningInitiation: React.FC<PlanningInitiationProps> = ({
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setPopulateOpen(true)}
+              className="px-3.5 py-2 bg-joint-600 hover:bg-joint-500 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition shadow-md shadow-joint-950/40"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Draft fields from source</span>
+            </button>
+            <button
               onClick={onOpenExportModal}
               className="px-3.5 py-2 bg-joint-950/90 hover:bg-joint-900 text-joint-200 text-xs font-semibold rounded-lg border border-joint-700/80 hover:border-joint-500 transition flex items-center gap-1.5 shadow-sm"
             >
@@ -1159,6 +1169,12 @@ export const PlanningInitiation: React.FC<PlanningInitiationProps> = ({
               <span>Export Brief</span>
             </button>
           </div>
+      <PopulateFieldsPanel
+        isOpen={populateOpen}
+        onClose={() => setPopulateOpen(false)}
+        stepId={1}
+      />
+
         </div>
 
         {/* Tab Navigation */}

@@ -8,6 +8,8 @@ import {
   ExtractedTask,
   IPlanningAssistant,
   DEFAULT_ASSISTANT_CONFIG,
+  FieldSpec,
+  PopulatedField,
 } from './types';
 import {
   ROLE_PREAMBLE,
@@ -20,6 +22,7 @@ import {
 } from './doctrine';
 import {
   extractJson,
+  validatePopulation,
   validateCritique,
   validateDraftedCoa,
   validateTasks,
@@ -172,6 +175,64 @@ export class OpenAiCompatibleAssistant implements IPlanningAssistant {
 
     const body = await res.json();
     return body?.choices?.[0]?.message?.content ?? '';
+  }
+
+  async populateFields(
+    fields: FieldSpec[],
+    sourceText: string,
+    sourceIsDirective: boolean,
+    ctx: AssistantContext
+  ): Promise<PopulatedField[]> {
+    const trimmed = (sourceText || '').trim();
+    if (!trimmed) throw new AssistantError('No source document was provided.');
+    if (!fields.length) throw new AssistantError('No fields were requested.');
+
+    const schema = fields
+      .map(
+        f =>
+          `  "${f.key}" — ${f.label}. ${f.guidance}` +
+          (f.kind === 'list' ? ' Return an array of strings.' : '')
+      )
+      .join('\n');
+
+    /*
+     * A reference document cannot task this headquarters. Saying so here stops
+     * the model lifting another command's taskings into these fields as though
+     * they had been issued to us.
+     */
+    const provenance = sourceIsDirective
+      ? `This document is the order that tasks ${ctx.echelon.designation}. Its taskings apply directly.`
+      : `This document was NOT issued to ${ctx.echelon.designation}; it is background. Do not ` +
+        `present its taskings as ours. Draft only what ${ctx.echelon.designation} would record ` +
+        `given that this document exists.`;
+
+    const system = `${ROLE_PREAMBLE}
+
+OPERATIONAL CONTEXT:
+${contextBlock(ctx)}
+
+PROVENANCE OF THE SOURCE:
+  ${provenance}
+
+Fill only these fields:
+${schema}
+
+Return a single JSON object whose keys are the field keys above and whose values
+are {"value": <string or array of strings>, "evidence": "a short quote from the
+source, or an empty string if you inferred it"}.
+
+Leave a field out entirely rather than guessing. An omitted field costs the
+planner nothing; an invented one costs them their trust in every other field.`;
+
+    const user = `Draft the fields above from the document below.
+
+Use the document's own wording where it carries the meaning. Do not pad, do not
+restate the field name back as its value, and do not add fields nobody asked for.
+
+SOURCE DOCUMENT:
+${trimmed.slice(0, 24000)}`;
+
+    return this.completeValidated(system, user, raw => validatePopulation(raw, fields));
   }
 
   async transcribeImages(images: string[], ctx: AssistantContext): Promise<string> {

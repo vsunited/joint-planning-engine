@@ -1,5 +1,6 @@
-import type { PlanningEchelon } from '@jpe/shared';
 'use client';
+
+import type { PlanningEchelon } from '@jpe/shared';
 
 import React from 'react';
 import { Shield, Sparkles, UserCheck, Bell, Settings2, FolderPlus } from 'lucide-react';

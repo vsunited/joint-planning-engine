@@ -336,7 +336,20 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
                     <div className="flex items-center gap-2 mt-2.5">
                       <button
                         type="button"
-                        onClick={() => confirm(proposal.echelon)}
+                        onClick={() => {
+                          /*
+                           * Commit the documents alongside the level.
+                           *
+                           * The level was just derived from these uploads, and
+                           * this dialog otherwise holds them in local state
+                           * until Apply. Locking globally while the evidence
+                           * stayed uncommitted let a planner confirm a
+                           * headquarters and then find no directive attached
+                           * to the plan it came from.
+                           */
+                          confirm(proposal.echelon);
+                          onSave(scenario);
+                        }}
                         className="px-3 py-1.5 rounded-lg bg-joint-600 hover:bg-joint-500 text-white text-[11px] font-bold transition"
                       >
                         Confirm and lock this level

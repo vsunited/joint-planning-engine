@@ -1,5 +1,7 @@
-import type { PlanningEchelon } from '@jpe/shared';
 'use client';
+
+import type { PlanningEchelon } from '@jpe/shared';
+import { PopulateFieldsPanel } from '@/components/PopulateFieldsPanel';
 
 import React, { useState } from 'react';
 import {
@@ -10,6 +12,7 @@ import {
   STAFF_DIRECTORATES,
 } from '@jpe/shared';
 import {
+  Sparkles,
   Cpu,
   Eye,
   ListTodo,
@@ -615,6 +618,7 @@ export const MissionAnalysis: React.FC<MissionAnalysisProps> = ({
   onOpenExportModal,
 }) => {
   const { scenario, echelon, missionAnalysis: state, setMissionAnalysis: onStateChange } = usePlanning();
+  const [populateOpen, setPopulateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('tasks');
   const [aiOpen, setAiOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -640,6 +644,13 @@ export const MissionAnalysis: React.FC<MissionAnalysisProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPopulateOpen(true)}
+              className="px-3.5 py-2 bg-joint-600 hover:bg-joint-500 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition shadow-md shadow-joint-950/40"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Draft fields from source</span>
+            </button>
             <button
               onClick={() => setAiOpen(true)}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-2 transition shadow-md shadow-emerald-950/40"
@@ -676,6 +687,11 @@ export const MissionAnalysis: React.FC<MissionAnalysisProps> = ({
         </div>
       </div>
 
+      <PopulateFieldsPanel
+        isOpen={populateOpen}
+        onClose={() => setPopulateOpen(false)}
+        stepId={2}
+      />
       <AiTaskExtractionPanel
         isOpen={aiOpen}
         onClose={() => setAiOpen(false)}

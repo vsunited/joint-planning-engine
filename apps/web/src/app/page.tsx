@@ -112,6 +112,12 @@ function PlanningRoot() {
  */
 function PlanningWorkspace() {
   const { scenario, echelon, setScenario, resetPlanning } = usePlanning();
+  /*
+   * The authoritative headquarters, as distinct from the copy carried in
+   * planning state. Watching the copy could never detect a change, because the
+   * copy is what this effect updates.
+   */
+  const { echelon: liveEchelon } = useEchelon();
   const { session } = useTrial();
 
   const [selectedPhase, setSelectedPhase] = useState<number>(1);
@@ -134,17 +140,15 @@ function PlanningWorkspace() {
    * usually confirmed *from* an uploaded directive, discarding the uploads at
    * that moment would delete the document the planner had just used.
    */
-  const levelledFor = useRef<string | null>(null);
   useEffect(() => {
-    const key = `${echelon.level}:${echelon.designation}:${echelon.establishedBy}`;
-    if (levelledFor.current === null) {
-      levelledFor.current = key;
-      return;
-    }
-    if (levelledFor.current === key) return;
-    levelledFor.current = key;
-    resetPlanning(createInitialPlanningState(scenario, echelon));
-  }, [echelon, scenario, resetPlanning]);
+    const same =
+      liveEchelon.level === echelon.level &&
+      liveEchelon.designation === echelon.designation &&
+      liveEchelon.establishedBy === echelon.establishedBy &&
+      liveEchelon.multinational === echelon.multinational;
+    if (same) return;
+    resetPlanning(createInitialPlanningState(scenario, liveEchelon));
+  }, [liveEchelon, echelon, scenario, resetPlanning]);
 
   /*
    * A tool-arm session starts from a blank workspace oriented to its packet.
