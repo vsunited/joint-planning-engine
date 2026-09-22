@@ -1,6 +1,6 @@
 'use client';
 
-import { describeChain, echelon as echelonDef } from '@jpe/shared';
+import { describeChain, echelon as echelonDef, parseOrderHeader, proposeEchelon, sameHeadquarters } from '@jpe/shared';
 import { useEchelon } from '@/context/EchelonContext';
 import React, { useState } from 'react';
 import { 
@@ -34,7 +34,7 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
   currentScenario,
   onSave,
 }) => {
-  const { echelon, locked } = useEchelon();
+  const { echelon, locked, confirm } = useEchelon();
   const [scenario, setScenario] = useState<OperationalScenario>({ ...currentScenario });
   const [dragOver, setDragOver] = useState(false);
   const [ingesting, setIngesting] = useState<string>('');
@@ -42,7 +42,9 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
   if (!isOpen) return null;
 
   /** Converts an ingest result into the scenario's document record. */
-  const toDocument = (doc: IngestedDocument): UploadedDocument => ({
+  const toDocument = (doc: IngestedDocument): UploadedDocument => {
+    const header = parseOrderHeader(doc.text);
+    return {
     name: doc.name,
     size: `${(doc.size / (1024 * 1024)).toFixed(2)} MB`,
     type: doc.mime,
@@ -56,7 +58,41 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
     pageCount: doc.pageCount,
     detail: doc.detail,
     images: doc.images,
-  });
+    issuer: header.issuer ?? undefined,
+    addressee: header.addressee ?? undefined,
+    headerEvidence: header.evidence ?? undefined,
+    role: 'unknown',
+    };
+  };
+
+  /**
+   * Marks one document as the order that tasks this staff.
+   *
+   * Mutually exclusive by construction. A planner may hold an INDOPACOM order
+   * to CJTF-SEA and a EUCOM order to some other JTF at the same time, but they
+   * are planning one of those operations, not both, so choosing one releases
+   * the other to being a reference.
+   */
+  const setDirective = (index: number) => {
+    setScenario(prev => ({
+      ...prev,
+      uploadedDocuments: prev.uploadedDocuments.map((d, i) => ({
+        ...d,
+        role: i === index ? 'directive' : d.role === 'directive' ? 'reference' : d.role,
+      })),
+    }));
+  };
+
+  const directive = scenario.uploadedDocuments.find(d => d.role === 'directive');
+  const proposal = directive
+    ? proposeEchelon({
+        issuer: (directive.issuer ?? null) as never,
+        addressee: directive.addressee ?? null,
+        evidence: directive.headerEvidence ?? null,
+      })
+    : null;
+  const proposalMatchesLocked =
+    !!proposal && sameHeadquarters(proposal.echelon.designation, echelon.designation);
 
   /** Reads each file for real and stores the extracted text. */
   const handleFileUpload = async (files: File[]) => {
@@ -280,6 +316,52 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
                 <div className="text-[11px] font-mono text-slate-400 font-bold uppercase">
                   Ingested Strategic Directives ({scenario.uploadedDocuments.length})
                 </div>
+                {proposal && !proposalMatchesLocked && (
+                  <div className="mb-3 p-3 rounded-lg bg-joint-950/40 border border-joint-800">
+                    <p className="text-[10px] font-mono uppercase tracking-wider text-joint-300 mb-1.5">
+                      Planning level read from this directive
+                    </p>
+                    <p className="text-sm text-white">{describeChain(proposal.echelon)}</p>
+                    {proposal.evidence && (
+                      <p className="text-[10px] text-slate-400 font-mono mt-1.5 break-words">
+                        {/* The planner confirms something they can check, not a guess. */}
+                        Read from: “{proposal.evidence}”
+                      </p>
+                    )}
+                    {!proposal.confident && (
+                      <p className="text-[10px] text-amber-300/90 mt-1.5">
+                        The issuing command was not found in the header — check this before locking.
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 mt-2.5">
+                      <button
+                        type="button"
+                        onClick={() => confirm(proposal.echelon)}
+                        className="px-3 py-1.5 rounded-lg bg-joint-600 hover:bg-joint-500 text-white text-[11px] font-bold transition"
+                      >
+                        Confirm and lock this level
+                      </button>
+                      <button
+                        type="button"
+                        onClick={onOpenEchelonModal}
+                        className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900 hover:border-joint-600 text-slate-200 text-[11px] font-semibold transition"
+                      >
+                        Adjust
+                      </button>
+                    </div>
+                    {locked && (
+                      <p className="text-[10px] text-amber-300/80 mt-2">
+                        Currently locked to {echelon.designation}. Confirming replaces it and
+                        rebuilds the workspace.
+                      </p>
+                    )}
+                  </div>
+                )}
+                {proposal && proposalMatchesLocked && (
+                  <p className="mb-3 text-[10px] text-emerald-300/85 font-mono">
+                    Directive matches the locked headquarters — {echelon.designation}.
+                  </p>
+                )}
                 {scenario.uploadedDocuments.map((doc, idx) => (
                   <div
                     key={idx}
@@ -300,6 +382,11 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
                             {doc.detail}
                           </div>
                         )}
+                        {(doc.issuer || doc.addressee) && (
+                          <div className="text-[10px] text-slate-400 mt-1 font-mono">
+                            {doc.issuer ?? 'unknown'} → {doc.addressee ?? 'unknown'}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -314,6 +401,28 @@ export const ScenarioSetupModal: React.FC<ScenarioSetupModalProps> = ({
                       >
                         {statusLabel(doc.status)}
                       </span>
+                      {/*
+                        * Exactly one directive. A staff plans one operation for
+                        * one headquarters, so selecting a directive clears any
+                        * other rather than accumulating them.
+                        */}
+                      <button
+                        type="button"
+                        onClick={() => setDirective(idx)}
+                        disabled={!doc.addressee}
+                        title={
+                          doc.addressee
+                            ? 'The order that tasks this staff'
+                            : 'No addressee found in this document'
+                        }
+                        className={`text-[9px] font-mono px-1.5 py-0.5 rounded border transition disabled:opacity-30 ${
+                          doc.role === 'directive'
+                            ? 'text-joint-200 bg-joint-900 border-joint-600'
+                            : 'text-slate-400 bg-slate-900 border-slate-700 hover:border-joint-700'
+                        }`}
+                      >
+                        {doc.role === 'directive' ? 'OUR DIRECTIVE' : 'Set as directive'}
+                      </button>
                       <button
                         type="button"
                         onClick={() => removeDoc(idx)}

@@ -67,6 +67,19 @@ export {
 } from './constants';
 
 export {
+  parseOrderHeader,
+  proposeEchelon,
+  sameHeadquarters,
+  normaliseDesignation,
+} from './order';
+
+export type {
+  OrderHeader,
+  EchelonProposal,
+  DocumentRole,
+} from './order';
+
+export {
   echelon,
   describeChain,
   detectAddressee,

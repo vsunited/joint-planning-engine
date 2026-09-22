@@ -91,15 +91,7 @@ export default function HomePage() {
   );
 }
 
-/**
- * Builds the workspace for whichever headquarters this installation plans as.
- *
- * Keyed on the echelon, so confirming a different one discards the workspace
- * and rebuilds it. That is the intended behaviour rather than a shortcut:
- * specified and implied tasks are classified relative to this headquarters,
- * and carrying them across a change of level would leave a plan whose
- * classifications no longer mean what they say.
- */
+/** Builds the workspace for whichever headquarters this installation plans as. */
 function PlanningRoot() {
   const { echelon } = useEchelon();
   const initialState = useMemo(
@@ -108,7 +100,7 @@ function PlanningRoot() {
   );
 
   return (
-    <PlanningProvider key={`${echelon.level}:${echelon.designation}`} initialState={initialState}>
+    <PlanningProvider initialState={initialState}>
       <PlanningWorkspace />
     </PlanningProvider>
   );
@@ -129,6 +121,30 @@ function PlanningWorkspace() {
   const [isEchelonModalOpen, setIsEchelonModalOpen] = useState<boolean>(false);
 
   const openExportModal = () => setIsExportModalOpen(true);
+
+  /*
+   * Re-level the workspace when the headquarters changes.
+   *
+   * The derived work has to go: specified and implied tasks are classified
+   * relative to this headquarters, and carrying them across a change of level
+   * would leave a plan whose classifications no longer mean what they say.
+   *
+   * What the planner put in does not. Uploaded orders, the operation name and
+   * the operational area are inputs, not conclusions — and since the level is
+   * usually confirmed *from* an uploaded directive, discarding the uploads at
+   * that moment would delete the document the planner had just used.
+   */
+  const levelledFor = useRef<string | null>(null);
+  useEffect(() => {
+    const key = `${echelon.level}:${echelon.designation}:${echelon.establishedBy}`;
+    if (levelledFor.current === null) {
+      levelledFor.current = key;
+      return;
+    }
+    if (levelledFor.current === key) return;
+    levelledFor.current = key;
+    resetPlanning(createInitialPlanningState(scenario, echelon));
+  }, [echelon, scenario, resetPlanning]);
 
   /*
    * A tool-arm session starts from a blank workspace oriented to its packet.
