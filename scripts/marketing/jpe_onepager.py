@@ -12,6 +12,11 @@ Every figure on the sheet is counted from the shipping product. If a doctrinal
 constant set is added or a staff product is added, re-count before claiming a
 new number — the sheet says outright that the figures were counted, and an
 evaluator who checks one and finds it stale discounts the rest of the page.
+
+Count structurally, not by counting quote characters. Two of the COA validity
+sub-tests are double-quoted because they contain an apostrophe, and a script
+that counts single quotes and halves them reads 25 sub-tests as 24. That error
+reached this sheet once already.
 """
 import os
 from reportlab.lib.pagesizes import letter
@@ -211,7 +216,7 @@ stats = [
     ('62', 'doctrinal\nconstant sets'),
     ('7 of 7', 'JPP steps\nlive'),
     ('28', 'exportable\nstaff products'),
-    ('5 / 24', 'validity criteria\n& sub-tests'),
+    ('5 / 25', 'validity criteria\n& sub-tests'),
     ('19', 'COA analysis\npurposes'),
     ('9', 'plan development\nactivities'),
 ]
