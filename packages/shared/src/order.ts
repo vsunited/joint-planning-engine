@@ -23,9 +23,19 @@ export interface OrderHeader {
   evidence: string | null;
 }
 
+/*
+ * Ordered deliberately. A fragmentary order's header names the order it
+ * modifies before it names its addressee — "FRAGORD 01 TO PLANORD 26-11 /
+ * USINDOPACOM TO COMMANDER, CJTF-SEA" — so taking the first "TO" would report
+ * the base order as the headquarters being tasked. The forms that name a
+ * commander are unambiguous, so they are tried first and the bare forms are
+ * only a fallback.
+ */
 const TO_PATTERNS = [
-  /\bTO\s*:?\s*(?:COMMANDER\s*,?\s*)?([A-Z0-9][A-Z0-9\-\s]{2,40}?)(?:\s*\n|\s*\/|$)/,
-  /\bFOR\s*:?\s*(?:COMMANDER\s*,?\s*)?([A-Z0-9][A-Z0-9\-\s]{2,40}?)(?:\s*\n|\s*\/|$)/,
+  /\bTO\s*:?\s*COMMANDER\s*,?\s*([A-Z0-9][A-Z0-9\-\s]{2,40}?)(?:\s*\n|\s*\/|$)/,
+  /\bFOR\s*:?\s*COMMANDER\s*,?\s*([A-Z0-9][A-Z0-9\-\s]{2,40}?)(?:\s*\n|\s*\/|$)/,
+  /\bTO\s*:?\s*([A-Z0-9][A-Z0-9\-\s]{2,40}?)(?:\s*\n|\s*\/|$)/,
+  /\bFOR\s*:?\s*([A-Z0-9][A-Z0-9\-\s]{2,40}?)(?:\s*\n|\s*\/|$)/,
 ];
 
 /**

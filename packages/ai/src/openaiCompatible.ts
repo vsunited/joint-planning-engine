@@ -10,6 +10,7 @@ import {
   DEFAULT_ASSISTANT_CONFIG,
   FieldSpec,
   PopulatedField,
+  ProposedCcir,
 } from './types';
 import {
   ROLE_PREAMBLE,
@@ -22,6 +23,7 @@ import {
 } from './doctrine';
 import {
   extractJson,
+  validateCcirs,
   validatePopulation,
   validateCritique,
   validateDraftedCoa,
@@ -233,6 +235,46 @@ SOURCE DOCUMENT:
 ${trimmed.slice(0, 24000)}`;
 
     return this.completeValidated(system, user, raw => validatePopulation(raw, fields));
+  }
+
+  async proposeCcirs(assumptions: string[], ctx: AssistantContext): Promise<ProposedCcir[]> {
+    const live = assumptions.map(a => (a || '').trim()).filter(Boolean);
+    if (!live.length) throw new AssistantError('There are no assumptions to derive requirements from.');
+
+    const system = `${ROLE_PREAMBLE}
+
+OPERATIONAL CONTEXT:
+${contextBlock(ctx)}
+
+CCIR RULES (JP 5-0, mission analysis):
+  An assumption is something the plan requires to be true but which is not
+  known to be true. Every assumption the plan depends on needs a commander's
+  critical information requirement that will confirm it or kill it, early
+  enough to change the plan.
+
+  PIR  — Priority Intelligence Requirement. About the enemy, the population,
+         the terrain or the wider environment. Answered by collection.
+  FFIR — Friendly Force Information Requirement. About this force or a
+         partner force: readiness, posture, sustainment, access, authorities.
+
+  Write the requirement as a question a staff can actually answer, not as a
+  restatement of the assumption. "We assume host-nation port access remains
+  available" becomes "Will the host nation withdraw port access at Subic
+  Bay?", not "Is host-nation port access available?".
+
+  The indicator is what someone would observe that answers it.
+
+Return this exact shape, one entry per assumption you can support:
+{"ccirs":[{"assumption":"the assumption text, copied","type":"PIR"|"FFIR","question":"string","indicator":"string"}]}
+
+Leave an assumption out rather than inventing a requirement for it.`;
+
+    const user = `Derive a commander's critical information requirement for each assumption below.
+
+ASSUMPTIONS:
+${live.map((a, i) => `${i + 1}. ${a}`).join('\n')}`;
+
+    return this.completeValidated(system, user, raw => validateCcirs(raw, live));
   }
 
   async transcribeImages(images: string[], ctx: AssistantContext): Promise<string> {
