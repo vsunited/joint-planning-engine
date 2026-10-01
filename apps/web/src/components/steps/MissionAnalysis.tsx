@@ -2,6 +2,7 @@
 
 import type { PlanningEchelon } from '@jpe/shared';
 import { PopulateFieldsPanel } from '@/components/PopulateFieldsPanel';
+import { FragordDiffPanel } from '@/components/FragordDiffPanel';
 
 import React, { useState } from 'react';
 import {
@@ -12,6 +13,7 @@ import {
   STAFF_DIRECTORATES,
 } from '@jpe/shared';
 import {
+  GitCompare,
   Sparkles,
   Cpu,
   Eye,
@@ -619,6 +621,7 @@ export const MissionAnalysis: React.FC<MissionAnalysisProps> = ({
 }) => {
   const { scenario, echelon, missionAnalysis: state, setMissionAnalysis: onStateChange } = usePlanning();
   const [populateOpen, setPopulateOpen] = useState(false);
+  const [fragordOpen, setFragordOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('tasks');
   const [aiOpen, setAiOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -629,6 +632,13 @@ export const MissionAnalysis: React.FC<MissionAnalysisProps> = ({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
+            <button
+              onClick={() => setFragordOpen(true)}
+              className="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition shadow-md shadow-amber-950/40"
+            >
+              <GitCompare className="w-3.5 h-3.5" />
+              <span>What changed?</span>
+            </button>
               <span className="text-[11px] font-mono font-bold tracking-wider px-2 py-0.5 rounded bg-joint-950 text-joint-300 border border-joint-800">
                 STEP 2 OF 7
               </span>
@@ -687,6 +697,7 @@ export const MissionAnalysis: React.FC<MissionAnalysisProps> = ({
         </div>
       </div>
 
+      <FragordDiffPanel isOpen={fragordOpen} onClose={() => setFragordOpen(false)} />
       <PopulateFieldsPanel
         isOpen={populateOpen}
         onClose={() => setPopulateOpen(false)}
