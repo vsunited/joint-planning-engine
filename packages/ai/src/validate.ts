@@ -1,6 +1,6 @@
 import { AssistantError, ExtractedTask, DraftedCoa, CoaCritique, CritiqueVerdict } from './types';
 import { COA_VALIDITY_CRITERIA } from '@jpe/shared';
-import type { FieldSpec, PopulatedField } from './types';
+import type { FieldSpec, PopulatedField, ProposedCcir } from './types';
 
 /**
  * Parsing and validation for model output.
@@ -247,5 +247,51 @@ export function validatePopulation(raw: unknown, fields: FieldSpec[]): Populated
     if (text) out.push({ key: spec.key, value: text, evidence });
   });
 
+  return out;
+}
+
+
+/**
+ * Validates proposed information requirements against the assumptions asked
+ * about.
+ *
+ * An entry whose assumption does not match one that was sent is dropped. A
+ * model will occasionally answer a requirement for an assumption it has
+ * invented, and a planner reviewing their CCIR list should not have to work
+ * out which rows correspond to assumptions they actually hold.
+ */
+export function validateCcirs(raw: unknown, assumptions: string[]): ProposedCcir[] {
+  const obj = normaliseKeys((raw as Record<string, unknown>) ?? {});
+  const list = (obj.ccirs ?? obj.requirements ?? obj.result ?? raw) as unknown;
+  if (!Array.isArray(list)) throw new ShapeError('Expected an array of requirements.');
+
+  /* Matched loosely: a model will re-wrap or re-punctuate the text it echoes. */
+  const key = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const known: [string, string][] = assumptions.map(a => [key(a), a]);
+
+  const out: ProposedCcir[] = [];
+  const claimed = new Set<string>();
+
+  list.forEach(entry => {
+    const e = normaliseKeys((entry as Record<string, unknown>) ?? {});
+    const question = String(e.question ?? '').trim();
+    const indicator = String(e.indicator ?? '').trim();
+    const assumptionText = String(e.assumption ?? '').trim();
+    if (!question) return;
+
+    const k = key(assumptionText);
+    let matched = known.find(([kk]) => kk === k)?.[1];
+    if (!matched && k) {
+      /* Fall back to containment, which survives truncation at either end. */
+      matched = known.find(([kk]) => kk && (kk.includes(k) || k.includes(kk)))?.[1];
+    }
+    if (!matched || claimed.has(matched)) return;
+    claimed.add(matched);
+
+    const type = String(e.type ?? '').toUpperCase() === 'FFIR' ? 'FFIR' : 'PIR';
+    out.push({ assumption: matched, type, question, indicator });
+  });
+
+  if (!out.length) throw new ShapeError('No requirement matched an assumption that was sent.');
   return out;
 }

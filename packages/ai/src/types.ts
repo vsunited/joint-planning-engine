@@ -105,6 +105,20 @@ export interface PopulatedField {
   evidence: string;
 }
 
+/**
+ * A proposed commander's critical information requirement.
+ *
+ * Tied to the assumption it exists to confirm or kill, because an assumption
+ * nobody is checking is a guess the plan is resting on.
+ */
+export interface ProposedCcir {
+  /** The assumption this requirement validates, copied back for matching. */
+  assumption: string;
+  type: 'PIR' | 'FFIR';
+  question: string;
+  indicator: string;
+}
+
 /** Operational context passed to every call, so output is situated. */
 export interface AssistantContext {
   /**
@@ -188,6 +202,9 @@ export interface IPlanningAssistant {
     sourceIsDirective: boolean,
     ctx: AssistantContext
   ): Promise<PopulatedField[]>;
+
+  /** Derives a critical information requirement for each assumption. */
+  proposeCcirs(assumptions: string[], ctx: AssistantContext): Promise<ProposedCcir[]>;
 
   transcribeImages(images: string[], ctx: AssistantContext): Promise<string>;
   draftCoa(guidance: string, ctx: AssistantContext): Promise<DraftedCoa>;

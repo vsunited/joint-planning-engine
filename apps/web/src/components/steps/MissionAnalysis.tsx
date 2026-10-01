@@ -3,6 +3,7 @@
 import type { PlanningEchelon } from '@jpe/shared';
 import { PopulateFieldsPanel } from '@/components/PopulateFieldsPanel';
 import { FragordDiffPanel } from '@/components/FragordDiffPanel';
+import { CcirDerivePanel } from '@/components/CcirDerivePanel';
 
 import React, { useState } from 'react';
 import {
@@ -402,6 +403,9 @@ const CcirsTab: React.FC<{
   state: MissionAnalysisState;
   onChange: (state: MissionAnalysisState) => void;
 }> = ({ state, onChange }) => {
+  const [deriveOpen, setDeriveOpen] = useState(false);
+  const unlinked = state.assumptions.filter(a => a.description.trim() && !a.linkedCcir).length;
+
   const addCcir = (type: CcirType) => {
     onChange({
       ...state,
@@ -421,6 +425,34 @@ const CcirsTab: React.FC<{
   const ffirs = state.ccirs.filter(c => c.type === 'FFIR');
 
   return (
+    <>
+      {/*
+        * Offered only when there is something to derive from. A button that
+        * does nothing on a tab a planner has not reached yet is noise.
+        */}
+      {unlinked > 0 && (
+        <div className="mb-4 p-3 rounded-lg bg-joint-950/40 border border-joint-800 flex items-center justify-between gap-3">
+          <p className="text-[11px] text-slate-300 leading-relaxed">
+            {unlinked} assumption{unlinked === 1 ? '' : 's'} with no requirement attached. An
+            assumption nobody is checking is a guess the plan rests on.
+          </p>
+          <button
+            onClick={() => setDeriveOpen(true)}
+            className="shrink-0 px-3 py-1.5 rounded-lg bg-joint-600 hover:bg-joint-500 text-white text-[11px] font-bold transition flex items-center gap-1.5"
+          >
+            <Target className="w-3 h-3" />
+            Derive from assumptions
+          </button>
+        </div>
+      )}
+
+      <CcirDerivePanel
+        isOpen={deriveOpen}
+        onClose={() => setDeriveOpen(false)}
+        state={state}
+        onChange={onChange}
+      />
+
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       <SectionCard title="Priority Intelligence Requirements (PIR)" subtitle="Focus on enemy and OE (J-2).">
         <div className="space-y-3">
@@ -468,6 +500,7 @@ const CcirsTab: React.FC<{
         </div>
       </SectionCard>
     </div>
+    </>
   );
 };
 
