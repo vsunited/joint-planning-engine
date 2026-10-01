@@ -20,6 +20,9 @@ import type { PlanningEchelon } from '@jpe/shared';
 import { AuthGate } from '@/components/AuthGate';
 import { EchelonProvider, useEchelon } from '@/context/EchelonContext';
 import { EchelonSetupModal } from '@/components/EchelonSetupModal';
+import { PlanFileControls } from '@/components/PlanFileControls';
+import { clearAutosave, flushAutosave, loadAutosave, scheduleAutosave } from '@/lib/plan/autosave';
+import { fromPlanFile } from '@/lib/plan/serialize';
 import { TrialProvider, useTrial } from '@/context/TrialContext';
 import { TrialBar } from '@/components/TrialBar';
 import { TrialSetupModal } from '@/components/TrialSetupModal';
@@ -111,7 +114,19 @@ function PlanningRoot() {
  * context, so this only owns which phase is showing and the modals.
  */
 function PlanningWorkspace() {
-  const { scenario, echelon, setScenario, resetPlanning } = usePlanning();
+  const {
+    scenario,
+    echelon,
+    planningInit,
+    missionAnalysis,
+    coaDevelopment,
+    coaAnalysis,
+    coaComparison,
+    coaApproval,
+    planOrderDevelopment,
+    setScenario,
+    resetPlanning,
+  } = usePlanning();
   /*
    * The authoritative headquarters, as distinct from the copy carried in
    * planning state. Watching the copy could never detect a change, because the
@@ -127,6 +142,51 @@ function PlanningWorkspace() {
   const [isEchelonModalOpen, setIsEchelonModalOpen] = useState<boolean>(false);
 
   const openExportModal = () => setIsExportModalOpen(true);
+
+  /*
+   * Keep the plan recoverable.
+   *
+   * A reload previously destroyed everything the staff had entered. Writing a
+   * debounced copy to the planner's own browser makes a refresh, a crashed tab
+   * or a closed laptop survivable. It is a safety net, not a substitute for
+   * saving a plan file, which is deliberate and portable.
+   */
+  const planState = useMemo(
+    () => ({
+      scenario,
+      echelon,
+      planningInit,
+      missionAnalysis,
+      coaDevelopment,
+      coaAnalysis,
+      coaComparison,
+      coaApproval,
+      planOrderDevelopment,
+    }),
+    [
+      scenario,
+      echelon,
+      planningInit,
+      missionAnalysis,
+      coaDevelopment,
+      coaAnalysis,
+      coaComparison,
+      coaApproval,
+      planOrderDevelopment,
+    ]
+  );
+
+  useEffect(() => scheduleAutosave(planState), [planState]);
+
+  useEffect(() => {
+    const save = () => flushAutosave(planState);
+    window.addEventListener('beforeunload', save);
+    return () => window.removeEventListener('beforeunload', save);
+  }, [planState]);
+
+  /* Offered, never applied silently — a planner may be starting fresh. */
+  const [recovery, setRecovery] = useState<ReturnType<typeof loadAutosave>>(null);
+  useEffect(() => setRecovery(loadAutosave()), []);
 
   /*
    * Re-level the workspace when the headquarters changes.
@@ -227,6 +287,44 @@ function PlanningWorkspace() {
 
       {/* Main Container */}
       <div className="flex-1 flex flex-col p-6 max-w-7xl mx-auto w-full space-y-6">
+        {recovery && (
+          <div className="bg-amber-950/25 border border-amber-800/60 rounded-xl p-3 flex items-center justify-between gap-3">
+            <p className="text-[11px] text-amber-200 leading-relaxed">
+              Unsaved work was recovered from{' '}
+              {new Date(recovery.savedAt).toLocaleString()} — {recovery.meta.designation},{' '}
+              {recovery.meta.operationName}. Restore it, or dismiss to carry on with a fresh plan.
+            </p>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => {
+                  try {
+                    const { state: loaded } = fromPlanFile(
+                      recovery,
+                      createInitialPlanningState(DEFAULT_SCENARIO, echelon)
+                    );
+                    resetPlanning(loaded);
+                  } catch {
+                    /* A corrupt recovery is not worth failing the session over. */
+                  }
+                  setRecovery(null);
+                }}
+                className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-bold transition"
+              >
+                Restore
+              </button>
+              <button
+                onClick={() => {
+                  clearAutosave();
+                  setRecovery(null);
+                }}
+                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium transition"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* JPP 7-Step Interactive Pipeline Strip */}
         <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-3 shadow-xl backdrop-blur-sm">
           <div className="flex items-center justify-between mb-2.5 px-1">
@@ -242,6 +340,9 @@ function PlanningWorkspace() {
                 <FolderPlus className="w-3 h-3" />
                 <span>Configure JTF Directives</span>
               </button>
+              <PlanFileControls
+                baseline={cur => createInitialPlanningState(DEFAULT_SCENARIO, cur.echelon)}
+              />
               <span className="text-[10px] text-slate-500 font-mono">
                 JP 5-0 Joint Standard
               </span>
